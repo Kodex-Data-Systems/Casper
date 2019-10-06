@@ -1,14 +1,14 @@
 import os
-import sys
-import time
 import sqlite3
+import json
 
 
 class AccountCreator:
     def __init__(self):
+        self.created = False
         self.connection = sqlite3.connect('account.db')
-        self.c = self.connection.cursor()
-        self.c.execute("""CREATE TABLE IF NOT EXISTS accounts (account VARCHAR(64), secret VARCHAR(64),
+        self.cursor = self.connection.cursor()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS accounts (list INTEGER, account VARCHAR(64), secret VARCHAR(64),
         public VARCHAR(64))""")
 
     def create_account(self):
@@ -30,10 +30,18 @@ class AccountCreator:
 
         return self.secret, self.public, self.account
 
-    def db_commit(self, *args):
-        self.sk, self.pk, self.acct = args[0]
+    def db_commit(self, keys):
+        self.sk, self.pk, self.acct = keys
 
-        self.c.execute("""INSERT INTO accounts (account, secret, public) VALUES (?, ?, ?)""",
-                       (self.acct, self.sk, self.pk))
+        index = self.cursor.execute("""SELECT * FROM accounts ORDER BY list DESC LIMIT 1""")
+        list_index = ([key[0] for key in index])
+        try:
+            index = list_index[0] + 1
+        except IndexError:
+            index = 1
+
+        self.cursor.execute("""INSERT INTO accounts (list, account, secret, public) VALUES (?, ?, ?, ?)""",
+                       (index, self.acct, self.sk, self.pk))
         self.connection.commit()
-        print('Account Created')
+        self.connection.close()
+        self.created = True
