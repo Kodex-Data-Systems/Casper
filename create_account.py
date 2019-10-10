@@ -1,6 +1,6 @@
 import os
 import sqlite3
-import json
+import subprocess
 
 
 class AccountCreator:
@@ -13,27 +13,22 @@ class AccountCreator:
 
     def create_account(self):
         ''' Create private, public and address key '''
-        os.system('jcli key generate --type ed25519 > s.sk')
-        with open('s.sk', 'r') as f:
-            self.secret = f.read()[:-1]
-        os.remove('s.sk')
-
+        self.secret = subprocess.check_output('jcli key generate --type ed25519extended', shell=True).decode()[:-1]
+        
         os.system('echo ' + self.secret + ' | jcli key to-public > p.pk')
         with open('p.pk', 'r') as f:
             self.public = f.read()[:-1]
         os.remove('p.pk')
 
-        os.system('jcli address account ' + self.public + ' --testing > a.ac')
-        with open('a.ac', 'r') as f:
-            self.account = f.read()[:-1]
-        os.remove('a.ac')
+        self.account = subprocess.check_output('jcli address account ' + self.public + ' --testing', shell=True).decode()[:-1]
 
         return self.secret, self.public, self.account
 
     def db_commit(self, keys):
         self.sk, self.pk, self.acct = keys
 
-        index = self.cursor.execute("""SELECT * FROM accounts ORDER BY list DESC LIMIT 1""")
+        index = self.cursor.execute(
+            """SELECT * FROM accounts ORDER BY list DESC LIMIT 1""")
         list_index = ([key[0] for key in index])
         try:
             index = list_index[0] + 1
@@ -41,7 +36,7 @@ class AccountCreator:
             index = 1
 
         self.cursor.execute("""INSERT INTO accounts (list, account, secret, public) VALUES (?, ?, ?, ?)""",
-                       (index, self.acct, self.sk, self.pk))
+                            (index, self.acct, self.sk, self.pk))
         self.connection.commit()
         self.connection.close()
         self.created = True

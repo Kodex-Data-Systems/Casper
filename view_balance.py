@@ -10,3 +10,5 @@ class BalanceViewer:
         with open('balance.json', 'r') as f:
             print(f.read())
         os.remove('balance.json')
+        
+
