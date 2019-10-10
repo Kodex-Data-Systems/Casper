@@ -7,8 +7,9 @@ import load_account as load
 import create_account as ca
 import view_balance as vb
 import send_tx as stx
-import message_log
+import message_log as ml
 import add_account as ac
+import node_stats as ns
 
 
 class Interface:
@@ -29,7 +30,7 @@ class Interface:
         self.account_loaded = False
         self.account = ''
         self.sk = ''
-        Interface.typed_text('CASPER v0.4 -- Kodex Data Systems 2019', 0.05)
+        Interface.typed_text('CASPER v0.4 -- Kodex Data Systems 2019', 0.02)
         print('\n\n')
 
     def run_function(self):
@@ -39,10 +40,12 @@ class Interface:
             print('2) Load account')
             print('3) Add existing account')
             print('4) Display current account')
+            print()
             print('5) Check balance')
             print('6) Send tx')
             print('7) Message log')
-            print('8) Node stats # Coming soon')
+            print('8) Node stats')
+            print()
             print('q) Exit')
             print('c) Clear screen')
             choice = input('Your Choice: ')
@@ -52,7 +55,7 @@ class Interface:
                 keys = create.create_account()
                 create.db_commit(keys)
                 if create.created == True:
-                    Interface.typed_text('Account Created', 0.05)
+                    Interface.typed_text('Account Created', 0.03)
                     print('\n\n')
 
             if choice == '2': # Load
@@ -67,14 +70,14 @@ class Interface:
                     self.account = user_account.load_account(index)
                     self.sk = user_account.load_sk(index)
                     self.account_loaded = True
-                    Interface.typed_text('Account loaded', 0.05)
+                    Interface.typed_text('Account loaded', 0.04)
                     print('\n\n')
 
             if choice == '3': # Add existing
                 add_acct = ac.AddAccount()
                 add_acct.get_keys()
                 if add_acct.added == True:
-                    Interface.typed_text('Account added', 0.05)
+                    Interface.typed_text('Account added', 0.04)
                     print('\n\n')
 
             if choice == '4': # Display current
@@ -84,35 +87,42 @@ class Interface:
                         print('\n\n')
                     except TypeError:
                         Interface.typed_text(
-                            'Error, please try reloading account', 0.05)
+                            'Error, please try reloading account', 0.04)
                         print('\n\n')
                 else:
-                    Interface.typed_text('No account loaded', 0.05)
+                    Interface.typed_text('No account loaded', 0.04)
                     print('\n\n')
 
             if choice == '5': # Check balance
                 if self.account_loaded:
                     vb.BalanceViewer(self.account, NODE)
                 else:
-                    Interface.typed_text('No account loaded', 0.05)
+                    Interface.typed_text('No account loaded', 0.04)
                     print('\n\n')
 
             if choice == '6': # Send Tx
-                print()
-                amount = input('Enter send amount: ')
-                receiver = input('Enter receiver address: ')
-                print()
-                transaction = stx.SendTx(amount, self.account, receiver, self.sk)
-                tx_sent = transaction.send_tx()
-                if tx_sent:
-                    Interface.typed_text('Transaction sent for verification', 0.04)
-                    print('\n\n')
+                if self.account_loaded:
+                    print()
+                    amount = input('Enter send amount: ')
+                    receiver = input('Enter receiver address: ')
+                    print()
+                    transaction = stx.SendTx(amount, self.account, receiver, self.sk)
+                    tx_sent = transaction.send_tx()
+                    if tx_sent:
+                        Interface.typed_text('Transaction sent', 0.04)
+                        print('\n\n')
+                    else:
+                        Interface.typed_text('Transaction failed to send', 0.04)
+                        print('\n\n')
                 else:
-                    Interface.typed_text('Transaction failed to send', 0.04)
+                    Interface.typed_text('No account loaded', 0.04)
                     print('\n\n')
 
             if choice == '7': # Message log
-                message_log.MessageLog()
+                ml.MessageLog()
+
+            if choice == '8': # Node stats
+                ns.NodeStats()
 
             if choice == 'q': # Quit
                 self.end_loop = True
