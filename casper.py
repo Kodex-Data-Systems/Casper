@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import sys
 import os
 import time
@@ -30,7 +32,7 @@ class Interface:
         self.account_loaded = False
         self.account = ''
         self.sk = ''
-        Interface.typed_text('CASPER v0.4 -- Kodex Data Systems 2019', 0.02)
+        Interface.typed_text('CASPER v1.0.0 -- Kodex Data Systems 2019', 0.02)
         print('\n\n')
 
     def run_function(self):
