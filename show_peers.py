@@ -3,7 +3,7 @@ import subprocess
 from config import NODE
 
 
-class NodeStats:
+class ShowPeers:
     def __init__(self):
         try:
             print()
