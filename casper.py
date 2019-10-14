@@ -119,7 +119,7 @@ class Interface:
 
                     #  If no tx's have been sent in this shell, actual counter nonce is used.
                     if not self.counter_iterated:
-                        self.counter_iteration = 100#transaction.get_counter()
+                        self.counter_iteration = transaction.get_counter()
 
                     #  If tx's have been sent counter nonce is manually iterated
                     #  Counter nonce does not change on node until pending transaction is confirmed.
