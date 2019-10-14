@@ -13,13 +13,17 @@ class AccountCreator:
 
     def create_account(self):
         ''' Create private, public and address key '''
+
+        #  Generate secret using JCLI.
         self.secret = subprocess.check_output('jcli key generate --type ed25519extended', shell=True).decode()[:-1]
         
-        os.system('echo ' + self.secret + ' | jcli key to-public > p.pk')
-        with open('p.pk', 'r') as f:
+        #  echo system call can not generate required result, save result to file instead.
+        os.system('echo ' + self.secret + ' | jcli key to-public > p.tmp')
+        with open('p.tmp', 'r') as f:
             self.public = f.read()[:-1]
-        os.remove('p.pk')
+        os.remove('p.tmp')
 
+        #  Generate account using JCLI.
         self.account = subprocess.check_output('jcli address account ' + self.public + ' --testing', shell=True).decode()[:-1]
 
         return self.secret, self.public, self.account
@@ -31,8 +35,10 @@ class AccountCreator:
             """SELECT * FROM accounts ORDER BY list DESC LIMIT 1""")
         list_index = ([key[0] for key in index])
         try:
+            #  Get the index number of the next row to insert new account.
             index = list_index[0] + 1
         except IndexError:
+            #  If database does not exist, create DB with account at index 1.
             index = 1
 
         self.cursor.execute("""INSERT INTO accounts (list, account, secret, public) VALUES (?, ?, ?, ?)""",

@@ -9,5 +9,6 @@ class NodeStats:
             print()
             stats = subprocess.check_output('jcli rest v0 node stats get -h ' + NODE + '/api', shell=True).decode()
             print(stats)
+            
         except subprocess.CalledProcessError:
             print('Unable to connect\n')
