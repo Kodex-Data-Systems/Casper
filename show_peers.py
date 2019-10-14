@@ -1,7 +1,5 @@
 import subprocess
 
-from config import NODE
-
 
 class ShowPeers:
     def __init__(self):
