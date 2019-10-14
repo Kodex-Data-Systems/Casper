@@ -152,10 +152,10 @@ class Interface:
             if choice == '9':  #Show Peers
                 sp.ShowPeers()
             
-            if choice == '10'  #Show Stake Pools
+            if choice == '10':  #Show Stake Pools
                 ssp.ShowStakePools()
                 
-            if choice == '11'  #Show Stake
+            if choice == '11':  #Show Stake
                 ss.ShowStake()
 
             if choice == 'q':  # Quit
