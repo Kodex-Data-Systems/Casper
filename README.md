@@ -1,7 +1,7 @@
 # Casper
 A simple tool for interacting with the Cardano blockchain
 
-Casper requires a Jormungandr node running locally. You can edit the `config.py` to reflect your REST API.
+Casper requires a Jormungandr node running locally.  You can edit the `config.py` to reflect your REST API.
 
 Sample config.py:
 ```
