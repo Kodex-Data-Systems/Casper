@@ -10,6 +10,9 @@ import send_tx as stx
 import message_log as ml
 import add_account as ac
 import node_stats as ns
+import show_peers as sp
+import show_stake as ss
+import show_stake_pools as ssp
 
 
 class Interface:
@@ -145,6 +148,15 @@ class Interface:
 
             if choice == '8':  # Node stats
                 ns.NodeStats()
+                
+            if choice == '9':  #Show Peers
+                sp.ShowPeers()
+            
+            if choice == '10'  #Show Stake Pools
+                ssp.ShowStakePools()
+                
+            if choice == '11'  #Show Stake
+                ss.ShowStake()
 
             if choice == 'q':  # Quit
                 self.end_loop = True
