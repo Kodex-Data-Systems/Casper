@@ -13,7 +13,7 @@ import node_stats as ns
 import show_peers as sp
 import show_stake as ss
 import show_stake_pools as ssp
-
+import show_blockchain_size as sbs
 
 class Interface:
     @classmethod
@@ -54,6 +54,7 @@ class Interface:
             print('9)  Show Established Peers')
             print('10) Show Stake Pools')
             print('11) Show Stake')
+            print('12) Show Blockchain Size')
             print()
             print('q)  Exit')
             print('c)  Clear screen')
@@ -160,6 +161,9 @@ class Interface:
                 
             if choice == '11':  #Show Stake
                 ss.ShowStake()
+                                
+            if choice == '12':  #Show Chain Size
+                sbs.ShowBlockchainSize()
 
             if choice == 'q':  # Quit
                 self.end_loop = True
