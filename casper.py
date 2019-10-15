@@ -173,7 +173,7 @@ class Interface:
                 sjorv.ShowJormungandrVersion()
 
             if choice == '14':  #Show JCLI Version
-                scliv.ShowJcliVersion()
+                sjcliv.ShowJcliVersion()
 
             if choice == 'q':  # Quit
                 self.end_loop = True
