@@ -14,6 +14,8 @@ import show_peers as sp
 import show_stake as ss
 import show_stake_pools as ssp
 import show_blockchain_size as sbs
+import show_jormungandr_version as sjorv
+import show_jcli_version as sjcliv
 
 class Interface:
     @classmethod
@@ -55,6 +57,8 @@ class Interface:
             print('10) Show Stake Pools')
             print('11) Show Stake')
             print('12) Show Blockchain Size')
+            print('13) Show Jormungandr Version')
+            print('14) Show JCLI Version')
             print()
             print('q)  Exit')
             print('c)  Clear screen')
@@ -164,6 +168,12 @@ class Interface:
                                 
             if choice == '12':  #Show Chain Size
                 sbs.ShowBlockchainSize()
+
+            if choice == '13':  #Show Jormungandr Version
+                sbs.ShowJormungandrVersion()
+
+            if choice == '14':  #Show JCLI Version
+                sbs.ShowJcliVersion()
 
             if choice == 'q':  # Quit
                 self.end_loop = True
