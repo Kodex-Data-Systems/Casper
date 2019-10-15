@@ -170,10 +170,10 @@ class Interface:
                 sbs.ShowBlockchainSize()
 
             if choice == '13':  #Show Jormungandr Version
-                sbs.ShowJormungandrVersion()
+                sjorv.ShowJormungandrVersion()
 
             if choice == '14':  #Show JCLI Version
-                sbs.ShowJcliVersion()
+                scliv.ShowJcliVersion()
 
             if choice == 'q':  # Quit
                 self.end_loop = True
