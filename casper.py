@@ -16,6 +16,7 @@ import show_stake_pools as ssp
 import show_blockchain_size as sbs
 import show_jormungandr_version as sjorv
 import show_jcli_version as sjcliv
+import show_leaders_logs as sll
 
 class Interface:
     @classmethod
@@ -157,22 +158,25 @@ class Interface:
             if choice == '8':  # Node stats
                 ns.NodeStats()
                 
-            if choice == '9':  #Show Peers
+            if choice == '9':  # Show Leaders Logs
+                sll.ShowLeadersLogs()
+                
+            if choice == '10':  #Show Peers
                 sp.ShowPeers()
             
-            if choice == '10':  #Show Stake Pools
+            if choice == '11':  #Show Stake Pools
                 ssp.ShowStakePools()
                 
-            if choice == '11':  #Show Stake
+            if choice == '12':  #Show Stake
                 ss.ShowStake()
                                 
-            if choice == '12':  #Show Chain Size
+            if choice == '13':  #Show Chain Size
                 sbs.ShowBlockchainSize()
 
-            if choice == '13':  #Show Jormungandr Version
+            if choice == '14':  #Show Jormungandr Version
                 sjorv.ShowJormungandrVersion()
 
-            if choice == '14':  #Show JCLI Version
+            if choice == '15':  #Show JCLI Version
                 sjcliv.ShowJcliVersion()
 
             if choice == 'q':  # Quit
