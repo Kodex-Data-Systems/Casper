@@ -13,5 +13,5 @@ class BalanceViewer(Interface):
             print('\n\n')
             
         except subprocess.CalledProcessError:
-            Interface.typed_text('Unable to view balance, account has not yet received a tx.', 0.02)
+            Interface.typed_text('Unable to view balance, account has not yet received a tx or node is offline.', 0.02)
             print('\n\n') 

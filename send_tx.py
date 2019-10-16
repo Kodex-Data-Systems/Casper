@@ -23,14 +23,18 @@ class SendTx:
         return (self.coefficient, self.constant)
 
     def get_counter(self):
-        #  Extract the required counter.
-        os.system('jcli rest v0 account get ' + self.sender +
-                  ' -h ' + self.NODE + '/api > balance.tmp')
-        with open('balance.tmp', 'r') as f:
-            counter = f.read().split()[2]
-        os.remove('balance.tmp')
+        try:
+            #  Extract the required counter.
+            os.system('jcli rest v0 account get ' + self.sender +
+                    ' -h ' + self.NODE + '/api > balance.tmp')
+            with open('balance.tmp', 'r') as f:
+                counter = f.read().split()[2]
+            os.remove('balance.tmp')
         
-        return int(counter)
+            return int(counter)
+
+        except IndexError:
+            print('Unable to connect to node, verify node is online.')
         
     def send_tx(self, counter):
         try:
@@ -56,7 +60,7 @@ class SendTx:
             #  Include genesis block.
             os.system('jcli transaction make-witness ' + witness + 
             ' --genesis-block-hash adbdd5ede31637f6c9bad5c271eec0bc3d0cb9efb86a5b913bb55cba549d0770 --type "account" --account-spending-counter ' +
-            counter + ' witness.output.tmp witness.secret.tmp')
+            str(counter) + ' witness.output.tmp witness.secret.tmp')
             
             #  Add witness.
             os.system('jcli transaction add-witness witness.output.tmp --staging file.staging')
