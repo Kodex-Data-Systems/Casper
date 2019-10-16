@@ -41,6 +41,7 @@ class Interface:
     def run_function(self):
         while not self.end_loop:
             print('Please choose an option:')
+            print()
             print('1)  Create new testnet address')
             print('2)  Add existing address')
             print('3)  Load address')
@@ -56,8 +57,11 @@ class Interface:
             print('11) Show Stake')
             print('12) Show Blockchain Size')
             print()
-            print('q)  Exit')
-            print('c)  Clear screen')
+            print('v) View batch TX counter')
+            print('r) Reset batch counter')
+            print('q) Exit')
+            print('c) Clear screen')
+            
             choice = input('Your Choice: ')
 
             if choice == '1':  # Create.
@@ -147,23 +151,44 @@ class Interface:
                     Interface.typed_text('No account loaded', 0.04)
                     print('\n\n')
 
-            if choice == '7':  # Message log.
+            if choice == '7': # Message log.
                 ml.MessageLog()
 
-            if choice == '8':  # Node stats.
+            if choice == '8': # Node stats.
                 ns.NodeStats()
                 
-            if choice == '9':  #  Show Peers.
+            if choice == '9': #  Show Peers.
                 sp.ShowPeers()
             
-            if choice == '10':  #  Show Stake Pools.
+            if choice == '10': #  Show Stake Pools.
                 ssp.ShowStakePools()
                 
-            if choice == '11':  #  Show Stake.
+            if choice == '11': #  Show Stake.
                 ss.ShowStake()
                                 
-            if choice == '12':  #  Show Chain Size.
+            if choice == '12': #  Show Chain Size.
                 sbs.ShowBlockchainSize()
+
+            if choice == 'v': #  View counter.
+                if self.account_loaded:
+                    load_counter = inc.CountChecker(0, self.index)
+                    load_counter.view_count()
+                else:
+                    Interface.typed_text('No account loaded', 0.04)
+                    print('\n\n')
+
+            if choice == 'r': #  Reset counter.
+                if self.account_loaded:
+                    # Get couner from stx, emptry strings for args.
+                    get_counter = stx.SendTx('', self.account, '', '')
+                    actual_counter = get_counter.get_counter()
+                    reset = inc.CountChecker(actual_counter, str(self.index))
+                    reset.reset_counter()
+                    Interface.typed_text('Counter reset', 0.04)
+                    print('\n\n')
+                else:
+                    Interface.typed_text('No account loaded', 0.04)
+                    print('\n\n')
 
             if choice == 'q':  # Quit.
                 self.end_loop = True

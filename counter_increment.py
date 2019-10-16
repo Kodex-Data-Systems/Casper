@@ -1,4 +1,5 @@
 import sqlite3
+import time
 
 class CountChecker:
     def __init__(self, counter, index):
@@ -60,17 +61,32 @@ class CountChecker:
         print('Incremented count:', self.incremented_count)
         print('New count: ', self.new_count)
 
-    def balance_db(self):
-        ''' Dev purposes only '''
-
+    def reset_counter(self):
         counter_update = ("""UPDATE accounts SET 
         current_count = ?, incremented_count= ?, new_count = ? WHERE list = ?""")
-        counter_data = (16, 0, 0, '1')
+        counter_data = (self.counter, 0, 0, self.index)
 
         self.cursor.execute(counter_update, counter_data)
-        self.connection.commit()     
+        self.connection.commit()    
 
-# bot = CountChecker(0, 0)
-# bot.balance_db()
+    def view_count(self):
+        counter_view = (""" SELECT current_count, incremented_count, new_count
+        FROM accounts WHERE list = ? """)
+        counter_data = self.index
+        view_data = self.cursor.execute(counter_view, counter_data)
+        self.connection.commit() 
 
+        for data in view_data:
+            current_count = data[0]
+            incremented_count = data[1]
+            new_count = data[2]
 
+        print()
+        print('Current count:', current_count)
+        print('Incremented count:', incremented_count)
+        print('New count', new_count)
+        print()
+        time.sleep(3)
+
+# bot = CountChecker(0, '1')
+# bot.view_count()

@@ -12,3 +12,4 @@ class NodeStats:
             
         except subprocess.CalledProcessError:
             print('Unable to connect\n')
+            

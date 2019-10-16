@@ -11,4 +11,4 @@ class MessageLog:
             print(log)
             
         except subprocess.CalledProcessError:
-            print('Unable to connect')
+            print('Unable to connect\n')
