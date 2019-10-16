@@ -55,7 +55,7 @@ class Interface:
             print('7)  Message log')
             print('8)  Node stats')
             print('9)  Show Leaders Logs')
-            print('10)  Show Established Peers')
+            print('10) Show Established Peers')
             print('11) Show Stake Pools')
             print('12) Show Stake')
             print('13) Show Blockchain Size')
