@@ -70,7 +70,7 @@ class CountChecker:
         self.cursor.execute(counter_update, counter_data)
         self.connection.commit()     
 
-bot = CountChecker(0, 0)
-bot.balance_db()
+# bot = CountChecker(0, 0)
+# bot.balance_db()
 
 
