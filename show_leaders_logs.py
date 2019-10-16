@@ -3,7 +3,7 @@ import subprocess
 from config import NODE
 
 
-class LeadersLogs:
+class ShowLeadersLogs:
     def __init__(self):
         try:
             print()
