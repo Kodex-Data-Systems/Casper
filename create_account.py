@@ -8,8 +8,9 @@ class AccountCreator:
         self.created = False
         self.connection = sqlite3.connect('account.db')
         self.cursor = self.connection.cursor()
-        self.cursor.execute("""CREATE TABLE IF NOT EXISTS accounts (list INTEGER, account VARCHAR(64), secret VARCHAR(64),
-        public VARCHAR(64))""")
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS accounts (list VARCHAR(64), account VARCHAR(64),
+        secret VARCHAR(64), public VARCHAR(64), current_count INTEGER,
+        incremented_count INTEGER, new_count INTEGER)""")
 
     def create_account(self):
         ''' Create private, public and address key '''
@@ -36,13 +37,14 @@ class AccountCreator:
         list_index = ([key[0] for key in index])
         try:
             #  Get the index number of the next row to insert new account.
-            index = list_index[0] + 1
+            index = str(int(list_index[0]) + 1)
         except IndexError:
             #  If database does not exist, create DB with account at index 1.
-            index = 1
+            index = '1'
 
-        self.cursor.execute("""INSERT INTO accounts (list, account, secret, public) VALUES (?, ?, ?, ?)""",
-                            (index, self.acct, self.sk, self.pk))
+        self.cursor.execute("""INSERT INTO accounts (list, account, secret, public,
+        current_count, incremented_count, new_count) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                            (str(index), self.acct, self.sk, self.pk, 0, 0, 0))
         self.connection.commit()
         self.connection.close()
         self.created = True

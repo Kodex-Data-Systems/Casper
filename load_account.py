@@ -30,12 +30,12 @@ class AccountLoader:
 
     def load_account(self, index):
         for i in self.db_list:
-            if i[0] == int(index) and int(index) in self.index_list:
+            if i[0] == index and index in self.index_list:
                 return (i[1], True) #  Return account key and True indicating account loaded
         return ('', False) #  Return empty string and False indicating account not loaded
 
     def load_sk(self, index):
         #  Return secret key based on index for use in send_tx
         for i in self.sk_list:
-            if i[0] == int(index):
+            if i[0] == index:
                 return i[1]                
