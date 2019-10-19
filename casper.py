@@ -142,7 +142,7 @@ class Interface:
                     if tx_sent:
                         increment_check.new_count += 1
                         Interface.typed_text('Transaction sent', 0.04)
-                        increment_check.increment_counter()
+                        increment_check.increment_update()
                         print('\n\n')
                     else:
                         Interface.typed_text('Transaction failed to send', 0.04)
