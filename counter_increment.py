@@ -46,7 +46,7 @@ class CountChecker:
 
         return self.new_count
         
-    def increment_counter(self):
+    def increment_update(self):
         counter_update = ("""UPDATE accounts SET 
         current_count = ?, incremented_count= ?, new_count = ? WHERE list = ?""")
         counter_data = (self.current_count, self.incremented_count,
