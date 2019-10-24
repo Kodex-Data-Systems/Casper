@@ -11,4 +11,4 @@ STORAGE = "/tmp/jormungandr"
 
 To use:
 
-`python3 casper.py`
+* `python3 casper.py`
