@@ -1,12 +1,3 @@
-## Docs
-
-For full documentation
-```
-cd Casper
-docsify serve ./docs
-```
-
-
 # Settings
 ## Example settings.json
 * Create settings.json in rootdir
@@ -28,7 +19,7 @@ docsify serve ./docs
 ## Run CLI UI
 * `python3 casper.py` or `npm run casper` or `yarn casper`
 
-## Dependencies
+## Depencies
 * Python 3.6+
 * pip3 install db-sqlite3
 * pip3 install pprint
