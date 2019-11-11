@@ -32,13 +32,13 @@ def to_hex(input):
 
 def get_exec_sh():
     os = platform.platform().lower()
-    exectuable = None
+    executable = None
     if "darwin-19" in os:
         executable = "/bin/sh"
     elif "debian" in os:
         executable = "/bin/sh"
 
-    return exectuable
+    return executable
 
 def acct_yaml_str(sk, pk, addr):
     runstr = f"""
