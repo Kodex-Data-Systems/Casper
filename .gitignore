@@ -11,7 +11,9 @@ accounts.db
 *.acct
 *.id
 /pools
-*.yaml
+config/*.yaml
+casper/*.yaml
+config/accounts
 backup.txt
 settings.json
 *.db
@@ -22,3 +24,5 @@ export.json
 _docs
 node_secret.yaml
 *.staging
+casper/.DS_Store
+.DS_Store
