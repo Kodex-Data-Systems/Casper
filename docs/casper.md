@@ -222,6 +222,21 @@ if choice == '5': #  Delegate Stake Pool
 ```
 - - -
 
+### `cli.acct_by_secret(**params)`
+**PARAMS**
+* secret `str`
+
+**RETURNS:**
+* secret `str`
+* public `str`
+* acct `str`
+
+**EXAMPLE**
+```py
+  secret, public, acct = casper.cli.acct_by_secret()
+```
+- - -
+
 ### `cli.prefix(prefix, priv_key) -> str`
 **PARAMETERS**
 * prefix `str`

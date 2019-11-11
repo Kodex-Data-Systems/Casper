@@ -3,8 +3,9 @@
 * Create settings.json in rootdir
 ```json
 {
-   "version": "0.0.2",
+   "version": "0.0.3",
    "node": "http://localhost:3101",
+   "platform": "Darwin-15.6.0-x86_64-i386-64bit",
    "dbpath": "accounts.db",
    "genesis": "c63a07f3e0db52c9abf886453316a1698d41a77023972c708345acf6645a8c0c",
    "cryptomodule": "Fernet",

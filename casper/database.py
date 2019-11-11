@@ -1,4 +1,4 @@
-import sys, sqlite3
+import sys, sqlite3, getpass
 import os.path
 from .utils import mk_timestamp, hash256, verify_password
 ABSOLUTEPATH = os.path.abspath(os.path.dirname(__file__))
@@ -88,7 +88,7 @@ class Database(object):
         if len(_user_row) <= 0:
             print("NO USER IN DB")
             _new_name = input("ENTER NEW USERNAME\n")
-            _new_pwd = input("ENTER NEW PASSWORD (min 8 chars incl number + specialchars):\n")
+            _new_pwd = getpass.getpass("ENTER NEW PASSWORD (min 8 chars incl number + specialchars):\n")
             #  here we should verify password-strength!
             if verify_password(_new_pwd) is False:
                 print("PASSWORD TO WEAK")
@@ -144,6 +144,11 @@ class Database(object):
             return None
 
     def save_acct(self, _sk, _pk, _acct):
+        #  check if account already in db
+        if self._acct_exists(_pk) is True:
+            print(f"ACCOUNT {_acct} ALREADY IN DB")
+            return
+
         #  Verify if valid keyset?
         #  encrypting data
         _crypt_module = "RAW"
@@ -157,3 +162,10 @@ class Database(object):
         )
         self.connection.commit()
         return
+
+    def _acct_exists(self, secret):
+        allaccounts = self.all_acct()
+        for row in allaccounts:
+            if secret in row:
+                return True
+        return False

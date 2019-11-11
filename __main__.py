@@ -1,10 +1,10 @@
-import sys, subprocess, time, pprint, json
+import sys, subprocess, time, pprint, json, os, getpass
 from tabulate import tabulate
 
 from casper import CasperCore
-from casper.utils import verify_password
+from casper.utils import verify_password, acct_yaml_str
 
-_USER_PWD = input("Enter your Password: ")
+_USER_PWD = getpass.getpass("Enter your Password: ")
 
 _MENU = """
 Please choose an option:
@@ -76,11 +76,10 @@ class CliInterface:
             if choice == '2':  # Import existing.
                 self.clear()
                 _sk = input("Input Secret Key: ")
-                _pk = input("Input Public Key: ")
-                _ak = input("Input Account Address: ")
-                casper.db.save_acct(_sk, _pk, _ak)
+                secret, public, address = casper.cli.acct_by_secret(_sk)
+                casper.db.save_acct(secret, public, address)
 
-                self.typed_text(f'Account Added: {_ak}', 0.002)
+                self.typed_text(f'Account Added: {address}', 0.002)
                 print('\n\n')
                 self.clear()
 
@@ -252,13 +251,22 @@ class CliInterface:
 
             if choice == "e":
                 self.clear()
-                with open('config/export.json', 'w') as f:
-                    json.dump(casper.db.all_acct(), f)
-                print("ALL ACCOUNTS EXPORTED")
+                accts = casper.db.all_acct()
+                type = input("EXPORT FORMAT? (json[j]/yaml[y]): ")
+                if type.lower() in ("yaml", "y"):
+                    if not os.path.exists('./config/accounts'):
+                        os.makedirs('config/accounts')
+                    for acct in accts:
+                        casper.cli._run(acct_yaml_str(acct[2], acct[3], acct[1]))
+                        os.rename(f'./{acct[1]}.yaml', f'./config/accounts/{acct[1]}.yaml')
+                elif type.lower() in ("json", "j"):
+                    with open('config/export.json', 'w') as f:
+                        json.dump(accts, f, indent=4)
+                else:
+                    print("Invalid format selected")
 
 
 if __name__ == "__main__":
-
     if sys.platform == 'win32':
                 print("Windows not supported 🦄")
                 sys.exit(2)

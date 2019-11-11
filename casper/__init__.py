@@ -1,7 +1,8 @@
-import sys, subprocess, json
+import sys, subprocess, json, platform
 from .node import Node
 from .database import Database
 from .cli import Cli
+from .utils import get_exec_sh
 with open('package.json', 'r') as json_file:
     package = json.load(json_file)
     version = package["version"]
@@ -11,6 +12,8 @@ class CasperCore(object):
         if sys.platform == 'win32':
             print("Windows not supported 🦄")
             sys.exit(2)
+
+        self.executable = get_exec_sh()
         self.settings = settings
 
         if "version" in self.settings:
@@ -37,6 +40,7 @@ class CasperCore(object):
 
     def versions(self):
         print("STARTING CASPER CORE v" + self.version)
+        print("OS", platform.platform())
         jcli_version = self._run("jcli --full-version")
         jormungandr_version = self._run("jormungandr --full-version")
         python_version = self._run("python3 --version")
@@ -58,11 +62,12 @@ class CasperCore(object):
         print(jormungandr_version)
         print(python_version)
 
-    def _run(self, runstring, errorstring = None):
+    def _run(self, runstring, errorstring=None):
         try:
             version = subprocess.check_output(
                 str(runstring),
-                shell=True
+                shell=True,
+                executable=self.executable
             ).decode()
             return version.replace("\n", "")
 
