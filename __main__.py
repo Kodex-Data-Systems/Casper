@@ -4,6 +4,8 @@ from tabulate import tabulate
 from casper import CasperCore
 from casper.utils import verify_password, acct_yaml_str
 from janalyze import JAnalyze
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
 
 _MENU = """
 Please choose an option:

@@ -1,7 +1,8 @@
-import sys, sqlite3, getpass
+import sys, sqlite3, getpass, os
 import os.path
 from .utils import mk_timestamp, hash256, verify_password
 ABSOLUTEPATH = os.path.abspath(os.path.dirname(__file__))
+os.environ["PYTHONIOENCODING"] = "utf-8"
 
 class Database(object):
     def __init__(self, settings, USER_PWD, module="Fernet"):
