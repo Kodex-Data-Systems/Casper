@@ -119,6 +119,12 @@ class Cli(object):
         except:
             return
 
+    def genesis_decode(self):
+        decoded_genesis = self._run(
+            f"curl -s {self.node}/api/v0/block/{self.genesis} | jcli genesis decode"
+        )
+        return decoded_genesis
+
     def create_acct(self):
         ''' Create Secret Key, Public Key and Account Address '''
 
