@@ -1,4 +1,4 @@
-import sys
+import sys, platform, getpass
 sys.path.append(".")
 
 import json, json, pprint, sys, sqlite3, os
@@ -39,6 +39,7 @@ class CasperSetup(object):
         _user_crypto = input("Input Crypto Module: ")
         _user_jmpath = input("Input Blockchain Storage Path: ")
 
+        self.usersettings["platform"] = platform.platform()
         if "http" in _user_node:
             self.usersettings["node"] = _user_node
 
@@ -74,8 +75,14 @@ class CasperSetup(object):
         with open('config/settings.json', 'w') as fp:
             json.dump(self.usersettings, fp, indent=4)
 
-    def _load_sql(self, file):
-        with open (os.path.join(ABSOLUTEPATH, "../casper/sql/" + file), "r") as file:
+    def _load_sql(self, _file):
+        cp = os.path.dirname(__file__)
+        if cp == ".":
+            _path = os.path.join(os.path.dirname(__file__), "casper/sql/" + _file)
+        elif cp == "./config":
+            _path = os.path.join(os.path.dirname(__file__), "../casper/sql/" + _file)
+
+        with open (_path, "r") as file:
             data = file.read().replace('\n', '')
             return data
 
@@ -87,7 +94,7 @@ class CasperSetup(object):
         cursor.execute(self._load_sql("create_poolcerts_table.sql"))
 
         _new_name = input("Enter New Username: ")
-        _new_pwd = input("Enter New Password (min 8 chars incl number + specialchars): ")
+        _new_pwd = getpass.getpass("Enter New Password (min 8 chars incl number + specialchars): ")
 
         if verify_password(_new_pwd) is False:
             print("PASSWORD TO WEAK")
@@ -101,5 +108,5 @@ class CasperSetup(object):
         )
         connection.commit()
 
-
-SETUP = CasperSetup()
+if __name__ == "__main__":
+    SETUP = CasperSetup()

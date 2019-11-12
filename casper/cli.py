@@ -1,25 +1,30 @@
 import subprocess, os, pprint, time, requests
-
+from .utils import get_exec_sh
 class Cli(object):
     def __init__(self, settings):
         self.node = settings["node"]
         self.storage = settings["jmpath"]
         self.loaded = True
         self.genesis = settings["genesis"]
+        self.executable = get_exec_sh()
+
         if "NO_JORMUNGANDR" in settings:
             self.no_jormungandr = settings["NO_JORMUNGANDR"]
         else:
             self.no_jormungandr = False
 
-    def _run(self, runstring, errorstring = None):
+    def _run(self, runstring, errorstring=None):
+
         try:
-            version = subprocess.check_output(
+            output = subprocess.check_output(
                 str(runstring),
-                shell=True
+                shell=True,
+                executable=self.executable
             ).decode()
-            if version.find("failed to make a REST request") < -1:
+
+            if output.find("failed to make a REST request") < -1:
                 return
-            return version.replace("\n", "")
+            return output.replace("\n", "")
 
         except subprocess.CalledProcessError:
             if errorstring is None:
@@ -67,7 +72,7 @@ class Cli(object):
             "error cli.show_stake_pools"
         )
 
-    def show_balance(self, acct_addr, raw = True):
+    def show_balance(self, acct_addr, raw=True):
         try:
             raw_output = self._run(
                 f'jcli rest v0 account get {acct_addr} -h {self.node}/api',
@@ -123,8 +128,12 @@ class Cli(object):
             "error generating secret"
         ).replace("\n", "")
 
+        return self.acct_by_secret(_new_secret)
+
+    def acct_by_secret(self, secret):#
+        ''' Get account details by secret key '''
         #  echo system call can not generate required result, save result to file instead.
-        os.system('echo ' + _new_secret + ' | jcli key to-public > p.tmp')
+        os.system('echo ' + secret + ' | jcli key to-public > p.tmp')
         with open('p.tmp', 'r') as f:
             _new_public = f.read()[:-1]
         os.remove('p.tmp')
@@ -135,7 +144,7 @@ class Cli(object):
             "error generating account"
         ).replace("\n", "")
 
-        return _new_secret, _new_public, _new_acct
+        return secret, _new_public, _new_acct
 
     def _remove_tmp(self):
         try:
@@ -162,7 +171,8 @@ class Cli(object):
         #  1 Create VRF Secret
         _pool_vrf_sk = subprocess.check_output(
             f'jcli key generate --type Curve25519_2HashDH',
-            shell=True
+            shell=True,
+            executable=self.executable
         ).decode()[:-1]
 
         os.system(f'echo {_pool_vrf_sk} | jcli key to-public > p.tmp')
@@ -173,7 +183,11 @@ class Cli(object):
 
         #  2 Create KES Secret
         _pool_kes_sk = subprocess.check_output(
-            f'jcli key generate --type SumEd25519_12', shell=True).decode()[:-1]
+            f'jcli key generate --type SumEd25519_12',
+            shell=True,
+            executable=self.executable
+        ).decode()[:-1]
+
         os.system(f'echo {_pool_kes_sk} | jcli key to-public > p.tmp')
 
         with open('p.tmp', 'r') as f:
@@ -200,7 +214,7 @@ class Cli(object):
             node_id = f.read()
             #  print('The Node ID is: ', f.read())
 
-        
+
 
         command = f"""
 cat > {pool_name}.yaml << EOF
@@ -272,7 +286,8 @@ EOF
             os.system('jcli transaction finalize --staging file.staging')
             witness = subprocess.check_output(
                 'jcli transaction data-for-witness --staging file.staging',
-                shell=True
+                shell=True,
+                executable=self.executable
             ).decode()[:-1]
 
             #  Create files for witness via python. JCLI requires environmental variables.
@@ -293,7 +308,8 @@ EOF
             #  7 Show Transaction Info
             info = subprocess.check_output(
                 f'jcli transaction info --fee-constant {str(constant)} --fee-coefficient {str(coefficient)} --fee-certificate {str(cert)} --staging file.staging',
-                shell=True
+                shell=True,
+                executable=self.executable
             ).decode()
 
             #  8 Finalize the Transaction and Send to Blockchain
@@ -301,7 +317,8 @@ EOF
             os.system(f'jcli transaction auth -k stake_key.sk --staging file.staging')
             fragment_id = subprocess.check_output(
                 f'jcli transaction to-message --staging file.staging | jcli rest v0 message post -h {self.node}/api',
-                shell=True
+                shell=True,
+                executable=self.executable
             ).decode()
 
             #  Remove temp files, return tx not sent.
@@ -320,7 +337,8 @@ EOF
         #  Extract the tx fee (coefficient and constant) from the node using string slicing.
         data = subprocess.check_output(
             f'jcli rest v0 settings get -h {self.node}/api',
-            shell=True
+            shell=True,
+            executable=self.executable
         ).decode().replace(' ', '')
 
         data_dict = dict(s.split(':') for s in (data.split('\n')[7:9]))
@@ -363,7 +381,8 @@ EOF
             os.system('jcli transaction finalize --staging file.staging')
             witness = subprocess.check_output(
                 'jcli transaction data-for-witness --staging file.staging',
-                shell=True
+                shell=True,
+                executable=self.executable
             ).decode()[:-1]
 
             #  Create files for witness via python. JCLI requires environmental variables.
@@ -383,7 +402,8 @@ EOF
             )
             info = subprocess.check_output(
                 f'jcli transaction info --fee-constant {str(constant)} --fee-coefficient {str(coefficient)} --staging file.staging',
-                shell=True
+                shell=True,
+                executable=self.executable
             ).decode()
 
             #  Display transaction info for sender to verify.
@@ -403,7 +423,8 @@ EOF
                 #  )
                 fragment_id = subprocess.check_output(
                     f'jcli transaction to-message --staging file.staging | jcli rest v0 message post -h {self.node}/api',
-                    shell=True
+                    shell=True,
+                    executable=self.executable
                 ).decode()
 
                 fragment_id = fragment_id.replace(" ", "").replace("\n", "")

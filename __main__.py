@@ -1,10 +1,9 @@
-import sys, subprocess, time, pprint, json
+import sys, subprocess, time, pprint, json, os, getpass
 from tabulate import tabulate
 
 from casper import CasperCore
-from casper.utils import verify_password
-
-_USER_PWD = input("Enter your Password: ")
+from casper.utils import verify_password, acct_yaml_str
+from janalyze import JAnalyze
 
 _MENU = """
 Please choose an option:
@@ -14,12 +13,19 @@ Please choose an option:
 (7) Display Current Address      (8) Check Balance            (9) Show All Accounts
 
 (10) Show Message Log            (11) Show Node stats         (12) Show Established Peers
-(13) Show Stake Pools            (14) Show Stake              (15) Show Blockchain Size
-(16) Show Leader Logs            (17) Show Settings
+(13) Show Blockchain Size        (14) Show Leader Logs        (15) Show Settings
+(16) Aggregate Blocks Produced   (17) Stake Distribution
 
 (v) Show Versions                (i) View User Info           (f) View Config File
 (e) Export All Accounts          (c) Clear Screen             (q) Quit
+
 """
+
+if os.path.exists("config/settings.json") is False:
+    exec(open("config/__main__.py").read(), globals())
+    print("\n\nSTARTING CASPER")
+
+_USER_PWD = getpass.getpass("Enter your Password: ")
 
 with open('config/settings.json', 'r') as json_file:
     settings = json.load(json_file)
@@ -31,6 +37,7 @@ with open('config/settings.json', 'r') as json_file:
             _DEFAULT_CRYPTO = None
 
 casper = CasperCore(settings, USER_PWD=_USER_PWD, CRYPTO_MOD=_DEFAULT_CRYPTO)
+analyze = JAnalyze(settings)
 
 class CliInterface:
     @classmethod
@@ -76,11 +83,10 @@ class CliInterface:
             if choice == '2':  # Import existing.
                 self.clear()
                 _sk = input("Input Secret Key: ")
-                _pk = input("Input Public Key: ")
-                _ak = input("Input Account Address: ")
-                casper.db.save_acct(_sk, _pk, _ak)
+                secret, public, address = casper.cli.acct_by_secret(_sk)
+                casper.db.save_acct(secret, public, address)
 
-                self.typed_text(f'Account Added: {_ak}', 0.002)
+                self.typed_text(f'Account Added: {address}', 0.002)
                 print('\n\n')
                 self.clear()
 
@@ -199,30 +205,51 @@ class CliInterface:
                 self.clear()
                 pprint.pprint(casper.node.show_peers())
 
-            if choice == '13': #  Show Stake Pools.
-                self.clear()
-                pools = (casper.node.show_stake_pools())
-                pprint.pprint(pools)
-                pool_len = str(len(pools))
-                print()
-                self.typed_text(f'Number of registered pools: {pool_len}', 0.004)
+#            if choice == '13': #  Show Stake Pools.
+#                 self.clear()
+#                pools = casper.node.show_stake_pools()
 
-            if choice == '14': #  Show Stake.
-                self.clear()
-                stake = pprint.pprint(casper.node.show_stake())
-                print(tabulate(stake))
+#                pprint.pprint(pools)
+#                print("\n\n")
+#                self.typed_text(f'Number of registered pools: {str(len(pools))}', 0.004)
 
-            if choice == '15': #  Show Chain Size.
+#            if choice == '14': #  Show Stake.
+#                self.clear()
+#                stake = casper.node.show_stake()["stake"]["pools"]
+#                table = tabulate(
+#                    stake,
+#                    headers=[
+#                        "Hex-encoded stake pool ID",
+#                        "Total pool value"
+#                    ],
+#                    tablefmt="psql"
+#                )
+#                print(table)
+
+            if choice == '13': #  Show Chain Size.
                 self.clear()
                 pprint.pprint(casper.cli.show_blockchain_size())
 
-            if choice == '16': #  Show Leaders Logs.
+            if choice == '14': #  Show Leaders Logs.
                 self.clear()
-                pprint.pprint(casper.node.show_leader_logs())
+                #  pprint.pprint(casper.node.show_leader_logs())
+                leaderlogs = casper.node.show_leader_logs()
+                header = leaderlogs[0].keys()
+                rows =  [x.values() for x in leaderlogs]
+                table = tabulate(rows, header, tablefmt="psql")
+                print(table)
 
-            if choice == '17': #  Show Chain Settings.
+            if choice == '15': #  Show Chain Settings.
                 self.clear()
                 pprint.pprint(casper.node.show_settings())
+
+            if choice == "16": #  janalyze.py aggreate blocks
+                self.clear()
+                analyze.aggregate()
+
+            if choice == "17": #  janalyze.py distribution
+                self.clear()
+                analyze.distribution()
 
             if choice == 'f': #  Show Versions.
                 self.clear()
@@ -252,16 +279,25 @@ class CliInterface:
 
             if choice == "e":
                 self.clear()
-                with open('config/export.json', 'w') as f:
-                    json.dump(casper.db.all_acct(), f)
-                print("ALL ACCOUNTS EXPORTED")
+                accts = casper.db.all_acct()
+                _type = input("EXPORT FORMAT? (json[j] / yaml[y]): ")
+                if _type.lower() in ("yaml", "y"):
+                    if not os.path.exists('./config/accounts'):
+                        os.makedirs('config/accounts')
+                    for acct in accts:
+                        casper.cli._run(acct_yaml_str(acct[2], acct[3], acct[1]))
+                        os.rename(f'./{acct[1]}.yaml', f'./config/accounts/{acct[1]}.yaml')
+                elif _type.lower() in ("json", "j"):
+                    with open('config/export.json', 'w') as f:
+                        json.dump(accts, f, indent=4)
+                else:
+                    print("Invalid format selected")
 
 
 if __name__ == "__main__":
-
     if sys.platform == 'win32':
-                print("Windows not supported 🦄")
-                sys.exit(2)
+        print("Windows not supported 🦄")
+        sys.exit(2)
     cliui = CliInterface()
     cliui.clear()
     print (9 * " 👻 ")

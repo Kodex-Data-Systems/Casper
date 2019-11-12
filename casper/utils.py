@@ -1,3 +1,4 @@
+import platform
 import base64, hashlib, calendar
 from datetime import datetime
 from cryptography.fernet import Fernet
@@ -28,3 +29,23 @@ def to_base32(input):
 
 def to_hex(input):
     return input.encode("utf-8").hex()
+
+def get_exec_sh():
+    os = platform.platform().lower()
+    executable = None
+    if "darwin-19" in os:
+        executable = "/bin/sh"
+    elif "debian" in os:
+        executable = "/bin/sh"
+
+    return executable
+
+def acct_yaml_str(sk, pk, addr):
+    runstr = f"""
+cat > {addr}.yaml << EOF
+secret_key: {sk}
+public_key: {pk}
+account_address: {addr}
+EOF
+"""
+    return runstr

@@ -1,8 +1,11 @@
 import subprocess, requests, sys
 import urllib.request
+from .utils import get_exec_sh
 
 class Node(object):
     def __init__(self, settings):
+        self.executable = get_exec_sh()
+
         self.url = settings["node"]
         # Checkin an ApiRoute to ensure node is up
         try:
@@ -13,12 +16,15 @@ class Node(object):
             sys.exit(2)
     def show_peers(self):
         try:
-            peers = subprocess.check_output('netstat -anlp | egrep "ESTABLISHED+.*jormungandr" | cut -c 45-68 | cut -d ":" -f 1 | sort | uniq -c | sort -nr', shell=True).decode()
-            print(peers)
+            peers = subprocess.check_output('netstat -anlp | egrep "ESTABLISHED+.*jormungandr" | cut -c 45-68 | cut -d ":" -f 1 | sort | uniq -c | sort -nr',
+            shell=True,
+            executable=self.executable
+            ).decode()
+            return peers
 
 
         except subprocess.CalledProcessError:
-            print('Unable to connect\n')
+            print('Only Linux supported\n')
 
 #  REQUESTS
 #  API DOCS:
