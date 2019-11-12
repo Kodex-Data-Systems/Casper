@@ -119,11 +119,12 @@ class JAnalyze():
                 # if args.bigvaluesort == True:
                 #     print(f'{tabulate(sorted(table, key=lambda x: x[1], reverse=True), headers, tablefmt="psql")}')
                 # else:
-                print(f'{tabulate(sorted(table, key=lambda x: x[0]), headers, tablefmt="psql")}')
+                ### Big Value Sort by Default ###
+                print(f'{tabulate(sorted(table, key=lambda x: x[1], reverse=True), headers, tablefmt="psql")}')
                 print(f'{"Totalblocks:":<21}{epochData["stats"]["blocksum"]}\n\n')
         self.globalAggregate = epochs
 
-    def distribution(self, silent=False, bigvaluesort=False, nozero=False):
+    def distribution(self, silent=False, bigvaluesort=True, nozero=True):
         epoch = 0
         unassigned = 0
         dangling = 0

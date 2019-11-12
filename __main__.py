@@ -13,14 +13,12 @@ Please choose an option:
 (7) Display Current Address      (8) Check Balance            (9) Show All Accounts
 
 (10) Show Message Log            (11) Show Node stats         (12) Show Established Peers
-(13) Show Stake Pools            (14) Show Stake              (15) Show Blockchain Size
-(16) Show Leader Logs            (17) Show Settings
+(13) Show Blockchain Size        (14) Show Leader Logs        (15) Show Settings
+(16) Aggregate Blocks Produced   (17) Stake Distribution
 
 (v) Show Versions                (i) View User Info           (f) View Config File
 (e) Export All Accounts          (c) Clear Screen             (q) Quit
 
-JANALZYE
-(b) Block Aggregate              (d) Distribution
 """
 
 if os.path.exists("config/settings.json") is False:
@@ -207,32 +205,32 @@ class CliInterface:
                 self.clear()
                 pprint.pprint(casper.node.show_peers())
 
-            if choice == '13': #  Show Stake Pools.
-                self.clear()
-                pools = casper.node.show_stake_pools()
+#            if choice == '13': #  Show Stake Pools.
+#                 self.clear()
+#                pools = casper.node.show_stake_pools()
 
-                pprint.pprint(pools)
-                print("\n\n")
-                self.typed_text(f'Number of registered pools: {str(len(pools))}', 0.004)
+#                pprint.pprint(pools)
+#                print("\n\n")
+#                self.typed_text(f'Number of registered pools: {str(len(pools))}', 0.004)
 
-            if choice == '14': #  Show Stake.
-                self.clear()
-                stake = casper.node.show_stake()["stake"]["pools"]
-                table = tabulate(
-                    stake,
-                    headers=[
-                        "Hex-encoded stake pool ID",
-                        "Total pool value"
-                    ],
-                    tablefmt="psql"
-                )
-                print(table)
+#            if choice == '14': #  Show Stake.
+#                self.clear()
+#                stake = casper.node.show_stake()["stake"]["pools"]
+#                table = tabulate(
+#                    stake,
+#                    headers=[
+#                        "Hex-encoded stake pool ID",
+#                        "Total pool value"
+#                    ],
+#                    tablefmt="psql"
+#                )
+#                print(table)
 
-            if choice == '15': #  Show Chain Size.
+            if choice == '13': #  Show Chain Size.
                 self.clear()
                 pprint.pprint(casper.cli.show_blockchain_size())
 
-            if choice == '16': #  Show Leaders Logs.
+            if choice == '14': #  Show Leaders Logs.
                 self.clear()
                 #  pprint.pprint(casper.node.show_leader_logs())
                 leaderlogs = casper.node.show_leader_logs()
@@ -241,9 +239,17 @@ class CliInterface:
                 table = tabulate(rows, header, tablefmt="psql")
                 print(table)
 
-            if choice == '17': #  Show Chain Settings.
+            if choice == '15': #  Show Chain Settings.
                 self.clear()
                 pprint.pprint(casper.node.show_settings())
+
+            if choice == "16": #  janalyze.py aggreate blocks
+                self.clear()
+                analyze.aggregate()
+
+            if choice == "17": #  janalyze.py distribution
+                self.clear()
+                analyze.distribution()
 
             if choice == 'f': #  Show Versions.
                 self.clear()
@@ -270,14 +276,6 @@ class CliInterface:
             if choice == "s":
                 self.clear()
                 pprint.pprint(settings)
-
-            if choice == "b": #  janalyze.py aggreate blocks
-                self.clear()
-                analyze.aggregate()
-
-            if choice == "d": #  janalyze.py distribution
-                self.clear()
-                analyze.distribution()
 
             if choice == "e":
                 self.clear()
