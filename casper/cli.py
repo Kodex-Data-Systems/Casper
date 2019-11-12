@@ -13,7 +13,7 @@ class Cli(object):
         else:
             self.no_jormungandr = False
 
-    def _run(self, runstring, errorstring=None):
+    def _run(self, runstring, errorstring=None, raw=False):
 
         try:
             output = subprocess.check_output(
@@ -24,6 +24,9 @@ class Cli(object):
 
             if output.find("failed to make a REST request") < -1:
                 return
+            if raw is True:
+                return output
+                
             return output.replace("\n", "")
 
         except subprocess.CalledProcessError:
@@ -121,7 +124,8 @@ class Cli(object):
 
     def genesis_decode(self):
         decoded_genesis = self._run(
-            f"curl -s {self.node}/api/v0/block/{self.genesis} | jcli genesis decode"
+            f"curl -s {self.node}/api/v0/block/{self.genesis} | jcli genesis decode",
+            raw=True
         )
         return decoded_genesis
 
