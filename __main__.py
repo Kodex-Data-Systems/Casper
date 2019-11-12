@@ -4,8 +4,6 @@ from tabulate import tabulate
 from casper import CasperCore
 from casper.utils import verify_password, acct_yaml_str
 
-_USER_PWD = getpass.getpass("Enter your Password: ")
-
 _MENU = """
 Please choose an option:
 
@@ -20,6 +18,12 @@ Please choose an option:
 (v) Show Versions                (i) View User Info           (f) View Config File
 (e) Export All Accounts          (c) Clear Screen             (q) Quit
 """
+
+if os.path.exists("config/settings.json") is False:
+    exec(open("config/__main__.py").read(), globals())
+    print("\n\nSTARTING CASPER")
+
+_USER_PWD = getpass.getpass("Enter your Password: ")
 
 with open('config/settings.json', 'r') as json_file:
     settings = json.load(json_file)
@@ -200,16 +204,23 @@ class CliInterface:
 
             if choice == '13': #  Show Stake Pools.
                 self.clear()
-                pools = (casper.node.show_stake_pools())
+                pools = casper.node.show_stake_pools()
+
                 pprint.pprint(pools)
-                pool_len = str(len(pools))
-                print()
-                self.typed_text(f'Number of registered pools: {pool_len}', 0.004)
+                print("\n\n")
+                self.typed_text(f'Number of registered pools: {str(len(pools))}', 0.004)
 
             if choice == '14': #  Show Stake.
                 self.clear()
-                stake = pprint.pprint(casper.node.show_stake())
-                print(tabulate(stake))
+                stake = casper.node.show_stake()["stake"]["pools"]
+                table = tabulate(
+                    stake,
+                    headers=[
+                        "Hex-encoded stake pool ID",
+                        "Total pool value"
+                    ]
+                )
+                print(table)
 
             if choice == '15': #  Show Chain Size.
                 self.clear()
@@ -217,7 +228,12 @@ class CliInterface:
 
             if choice == '16': #  Show Leaders Logs.
                 self.clear()
-                pprint.pprint(casper.node.show_leader_logs())
+                #  pprint.pprint(casper.node.show_leader_logs())
+                leaderlogs = casper.node.show_leader_logs()
+                header = leaderlogs[0].keys()
+                rows = [x.values() for x in leaderlogs]
+                table = tabulate(rows, header)
+                print(table)
 
             if choice == '17': #  Show Chain Settings.
                 self.clear()
@@ -268,8 +284,8 @@ class CliInterface:
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
-                print("Windows not supported 🦄")
-                sys.exit(2)
+        print("Windows not supported 🦄")
+        sys.exit(2)
     cliui = CliInterface()
     cliui.clear()
     print (9 * " 👻 ")

@@ -75,8 +75,14 @@ class CasperSetup(object):
         with open('config/settings.json', 'w') as fp:
             json.dump(self.usersettings, fp, indent=4)
 
-    def _load_sql(self, file):
-        with open (os.path.join(ABSOLUTEPATH, "../casper/sql/" + file), "r") as file:
+    def _load_sql(self, _file):
+        cp = os.path.dirname(__file__)
+        if cp == ".":
+            _path = os.path.join(os.path.dirname(__file__), "casper/sql/" + _file)
+        elif cp == "./config":
+            _path = os.path.join(os.path.dirname(__file__), "../casper/sql/" + _file)
+
+        with open (_path, "r") as file:
             data = file.read().replace('\n', '')
             return data
 
