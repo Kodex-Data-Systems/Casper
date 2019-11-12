@@ -165,7 +165,8 @@ class Database(object):
 
     def _acct_exists(self, secret):
         allaccounts = self.all_acct()
-        for row in allaccounts:
-            if secret in row:
-                return True
+        if allaccounts is not None:
+            for row in allaccounts:
+                if secret in row:
+                    return True
         return False
