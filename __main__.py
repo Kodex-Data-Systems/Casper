@@ -3,6 +3,7 @@ from tabulate import tabulate
 
 from casper import CasperCore
 from casper.utils import verify_password, acct_yaml_str
+from janalyze import JAnalyze
 
 _MENU = """
 Please choose an option:
@@ -17,6 +18,9 @@ Please choose an option:
 
 (v) Show Versions                (i) View User Info           (f) View Config File
 (e) Export All Accounts          (c) Clear Screen             (q) Quit
+
+JANALZYE
+(b) Block Aggregate              (d) Distribution
 """
 
 if os.path.exists("config/settings.json") is False:
@@ -35,6 +39,7 @@ with open('config/settings.json', 'r') as json_file:
             _DEFAULT_CRYPTO = None
 
 casper = CasperCore(settings, USER_PWD=_USER_PWD, CRYPTO_MOD=_DEFAULT_CRYPTO)
+analyze = JAnalyze(settings)
 
 class CliInterface:
     @classmethod
@@ -218,7 +223,8 @@ class CliInterface:
                     headers=[
                         "Hex-encoded stake pool ID",
                         "Total pool value"
-                    ]
+                    ],
+                    tablefmt="psql"
                 )
                 print(table)
 
@@ -231,8 +237,8 @@ class CliInterface:
                 #  pprint.pprint(casper.node.show_leader_logs())
                 leaderlogs = casper.node.show_leader_logs()
                 header = leaderlogs[0].keys()
-                rows = [x.values() for x in leaderlogs]
-                table = tabulate(rows, header)
+                rows =  [x.values() for x in leaderlogs]
+                table = tabulate(rows, header, tablefmt="psql")
                 print(table)
 
             if choice == '17': #  Show Chain Settings.
@@ -265,17 +271,25 @@ class CliInterface:
                 self.clear()
                 pprint.pprint(settings)
 
+            if choice == "b": #  janalyze.py aggreate blocks
+                self.clear()
+                analyze.aggregate()
+
+            if choice == "d": #  janalyze.py distribution
+                self.clear()
+                analyze.distribution()
+
             if choice == "e":
                 self.clear()
                 accts = casper.db.all_acct()
-                type = input("EXPORT FORMAT? (json[j]/yaml[y]): ")
-                if type.lower() in ("yaml", "y"):
+                _type = input("EXPORT FORMAT? (json[j] / yaml[y]): ")
+                if _type.lower() in ("yaml", "y"):
                     if not os.path.exists('./config/accounts'):
                         os.makedirs('config/accounts')
                     for acct in accts:
                         casper.cli._run(acct_yaml_str(acct[2], acct[3], acct[1]))
                         os.rename(f'./{acct[1]}.yaml', f'./config/accounts/{acct[1]}.yaml')
-                elif type.lower() in ("json", "j"):
+                elif _type.lower() in ("json", "j"):
                     with open('config/export.json', 'w') as f:
                         json.dump(accts, f, indent=4)
                 else:
