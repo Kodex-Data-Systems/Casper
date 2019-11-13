@@ -17,6 +17,7 @@ Please choose an option:
 (10) Show Message Log            (11) Show Node stats         (12) Show Established Peers
 (13) Show Blockchain Size        (14) Show Leader Logs        (15) Show Settings
 (16) Aggregate Blocks Produced   (17) Stake Distribution      (18) Genesis Decode
+(19) Fork Check
 
 (v) Show Versions                (i) View User Info           (f) View Config File
 (e) Export All Accounts          (c) Clear Screen             (q) Quit
@@ -259,6 +260,10 @@ class CliInterface:
             if choice == '18': #  Genesis Decode.
                 self.clear()
                 print(casper.cli.genesis_decode())
+
+            if choice == '19': #  Fork Check
+                self.clear()
+                analyze.forkcheck()
 
             if choice == 'f': #  Show Versions.
                 self.clear()
