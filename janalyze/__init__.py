@@ -9,6 +9,7 @@ __version__ = "0.1.0-kodex"
 import argparse, requests, os, json, sys
 from argparse import RawTextHelpFormatter
 from requests.exceptions import HTTPError
+from operator import itemgetter
 from tabulate import tabulate
 
 class JAnalyze():
@@ -65,6 +66,33 @@ class JAnalyze():
         if ivalue <= 0:
             raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
         return ivalue
+
+    def forkcheck(self):
+        thisblockhex = self.get_tip()
+        opportunities = 0
+        wins = 0
+        thisblock = self.parse_block(self.get_block(thisblockhex))
+        r = self.endpoint(f'{self.api_url}/leaders/logs')
+        y = json.loads(r.content)
+        completed = [x for x in y if x['finished_at_time'] != None]
+        for result in sorted(completed, key=itemgetter('finished_at_time'), reverse=True):
+            epoch, slot=result['scheduled_at_date'].split(".")
+            if(int(epoch) < int(thisblock['epoch'])):
+                break
+            opportunities += 1
+            while(int(slot) < int(thisblock['slot'])):
+                thisblockhex = thisblock['parent']
+                thisblock = self.parse_block(self.get_block(thisblock['parent']))
+
+            if(int(thisblock['epoch']) == int(epoch) and int(thisblock['slot']) == int(slot)):
+                if(thisblockhex == result['status']['Block']['block']):
+                    wins += 1
+                # else:
+                #    print("lost to " + thisblock['pool'])
+        if opportunities == 0:
+            print("100")
+        else:
+            print(int(wins*100/opportunities))
 
     def aggregate(self, silent=False, aggregate=1):
 
