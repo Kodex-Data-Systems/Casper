@@ -236,10 +236,13 @@ class CliInterface:
                 self.clear()
                 #  pprint.pprint(casper.node.show_leader_logs())
                 leaderlogs = casper.node.show_leader_logs()
-                header = leaderlogs[0].keys()
-                rows =  [x.values() for x in leaderlogs]
-                table = tabulate(rows, header, tablefmt="psql")
-                print(table)
+                if leaderlogs is not None and len(leaderlogs) > 0:
+                    header = leaderlogs[0].keys()
+                    rows =  [x.values() for x in leaderlogs]
+                    table = tabulate(rows, header, tablefmt="psql")
+                    print(table)
+                else:
+                    print("Leader logs are empty")
 
             if choice == '15': #  Show Chain Settings.
                 self.clear()
