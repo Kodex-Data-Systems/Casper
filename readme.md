@@ -15,10 +15,10 @@
 
 # Usage
 ## Run Setup
-* or run `python3 setup_casper.py` or `yarn setup` to create a config file
+* or run `python3 config` or `yarn setup` to create a config file
 
 ## Run CLI UI
-* `python3 casper.py` or `npm run casper` or `yarn casper`
+* `python3 .` or `npm run casper` or `yarn casper`
 
 ## Depencies
 * Python 3.6+

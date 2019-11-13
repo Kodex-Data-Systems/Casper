@@ -4,6 +4,8 @@ from tabulate import tabulate
 from casper import CasperCore
 from casper.utils import verify_password, acct_yaml_str
 from janalyze import JAnalyze
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
 
 _MENU = """
 Please choose an option:
@@ -14,7 +16,8 @@ Please choose an option:
 
 (10) Show Message Log            (11) Show Node stats         (12) Show Established Peers
 (13) Show Blockchain Size        (14) Show Leader Logs        (15) Show Settings
-(16) Aggregate Blocks Produced   (17) Stake Distribution
+(16) Aggregate Blocks Produced   (17) Stake Distribution      (18) Genesis Decode
+(19) Fork Check
 
 (v) Show Versions                (i) View User Info           (f) View Config File
 (e) Export All Accounts          (c) Clear Screen             (q) Quit
@@ -234,10 +237,13 @@ class CliInterface:
                 self.clear()
                 #  pprint.pprint(casper.node.show_leader_logs())
                 leaderlogs = casper.node.show_leader_logs()
-                header = leaderlogs[0].keys()
-                rows =  [x.values() for x in leaderlogs]
-                table = tabulate(rows, header, tablefmt="psql")
-                print(table)
+                if leaderlogs is not None and len(leaderlogs) > 0:
+                    header = leaderlogs[0].keys()
+                    rows =  [x.values() for x in leaderlogs]
+                    table = tabulate(rows, header, tablefmt="psql")
+                    print(table)
+                else:
+                    print("Leader logs are empty")
 
             if choice == '15': #  Show Chain Settings.
                 self.clear()
@@ -250,6 +256,14 @@ class CliInterface:
             if choice == "17": #  janalyze.py distribution
                 self.clear()
                 analyze.distribution()
+
+            if choice == '18': #  Genesis Decode.
+                self.clear()
+                print(casper.cli.genesis_decode())
+
+            if choice == '19': #  Fork Check
+                self.clear()
+                analyze.forkcheck()
 
             if choice == 'f': #  Show Versions.
                 self.clear()

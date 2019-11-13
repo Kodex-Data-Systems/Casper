@@ -13,7 +13,7 @@ class Cli(object):
         else:
             self.no_jormungandr = False
 
-    def _run(self, runstring, errorstring=None):
+    def _run(self, runstring, errorstring=None, raw=False):
 
         try:
             output = subprocess.check_output(
@@ -24,6 +24,9 @@ class Cli(object):
 
             if output.find("failed to make a REST request") < -1:
                 return
+            if raw is True:
+                return output
+                
             return output.replace("\n", "")
 
         except subprocess.CalledProcessError:
@@ -118,6 +121,13 @@ class Cli(object):
             return raw
         except:
             return
+
+    def genesis_decode(self):
+        decoded_genesis = self._run(
+            f"curl -s {self.node}/api/v0/block/{self.genesis} | jcli genesis decode",
+            raw=True
+        )
+        return decoded_genesis
 
     def create_acct(self):
         ''' Create Secret Key, Public Key and Account Address '''
@@ -243,7 +253,7 @@ EOF
         with open('key.tmp', 'w') as c:
             c.write(sk)
 
-        os.system(f'jcli certificate new stake-delegation {pool_id} {pk} stake_pool.cert')
+        os.system(f'jcli certificate new stake-delegation {pk} {pool_id} stake_pool.cert')
         #  os.system(f'jcli certificate sign key.tmp stake_pool.cert stake_pool.signcert')
         os.remove('key.tmp')
 

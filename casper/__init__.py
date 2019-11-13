@@ -1,8 +1,11 @@
-import sys, subprocess, json, platform
+import os, sys, subprocess, json, platform
 from .node import Node
 from .database import Database
 from .cli import Cli
 from .utils import get_exec_sh
+
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
 with open('package.json', 'r') as json_file:
     package = json.load(json_file)
     version = package["version"]

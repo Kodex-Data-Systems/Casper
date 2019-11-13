@@ -51,7 +51,7 @@ class CasperSetup(object):
         if _user_genesis != "":
             self.usersettings["genesis"] = _user_genesis
         else:
-            self.usersettings["genesis"] = "bad49dbbd149ee6cbe1f172d4a727b5e3cf9ea057651f303758eff9cb6ce8387"
+            self.usersettings["genesis"] = "0c6db1bc6b4794c8d3913529ebe6ba986684c3b23bfe4879fde37dabbc71ba93"
 
         if _user_crypto != "":
             self.usersettings["cryptomodule"] = _user_crypto

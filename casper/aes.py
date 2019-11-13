@@ -1,7 +1,8 @@
-import base64, hashlib
+import base64, hashlib, os
 from Crypto import Random
 from Crypto.Cipher import AES
 from .utils import hash256
+os.environ["PYTHONIOENCODING"]
 
 class AESCipher():
     def __init__(self, key):

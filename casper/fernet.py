@@ -1,12 +1,14 @@
-import base64
+import base64, os
 from .utils import hash256
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
 class FernetCipher(object):
-    def __init__(self, pwd, salt = None):
+    def __init__(self, pwd, salt=None):
         self.hash256 = hash256
         self.password = str.encode(pwd)
         if salt is None:
