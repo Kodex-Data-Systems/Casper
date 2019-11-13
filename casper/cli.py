@@ -163,6 +163,8 @@ class Cli(object):
             os.remove('file.staging')
             os.remove('stake_pool.cert')
             os.remove('stake_pool.signcert')
+            os.remove('stake_key.sk')
+
 
         except:
             return False
@@ -323,6 +325,7 @@ EOF
             ).decode()
 
             #  8 Finalize the Transaction and Send to Blockchain
+            os.system(f'echo {sk} > stake_key.sk')
             os.system('jcli transaction seal --staging file.staging')
             os.system(f'jcli transaction auth -k stake_key.sk --staging file.staging')
             fragment_id = subprocess.check_output(
