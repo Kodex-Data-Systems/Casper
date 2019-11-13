@@ -40,6 +40,8 @@ class CasperCore(object):
         else:
             self.db._verify_user(USER_NAME)
 
+        self.verifiy_versions()
+
 
     def versions(self):
         print("STARTING CASPER CORE v" + self.version)
@@ -64,6 +66,16 @@ class CasperCore(object):
         print(jcli_version)
         print(jormungandr_version)
         print(python_version)
+
+    def verifiy_versions(self):
+        version = self.node._get("https://api.github.com/repos/input-output-hk/jormungandr/tags")
+        current_version = version[0]["name"]
+        installed_version = self.cli._run("jormungandr --version").replace("jormungandr ", "v")
+        if current_version != installed_version:
+            print(f"jormungandr is outdated! \nRELEASED VERSION: {current_version}\nYOUR VERSION: {installed_version}")
+            c = input("DO YOU WANT TO CONTINUE? (y/n): ")
+            if c == "n":
+                sys.exit(2)
 
     def _run(self, runstring, errorstring=None):
         try:
