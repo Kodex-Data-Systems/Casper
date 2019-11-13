@@ -229,7 +229,7 @@ class Cli(object):
         command = f"""
 cat > {pool_name}.yaml << EOF
 genesis:
-  sig_key: {_pool_kes_pk}
+  sig_key: {_pool_kes_sk}
   vrf_key: {_pool_vrf_sk}
   node_id: {node_id}
 EOF
@@ -253,7 +253,7 @@ EOF
         with open('key.tmp', 'w') as c:
             c.write(sk)
 
-        os.system(f'jcli certificate new stake-delegation {pk} {pool_id} stake_pool.cert')
+        os.system(f'jcli certificate new stake-delegation {pk} {pool_id} -o stake_pool.cert')
         #  os.system(f'jcli certificate sign key.tmp stake_pool.cert stake_pool.signcert')
         os.remove('key.tmp')
 
