@@ -253,7 +253,7 @@ EOF
         with open('key.tmp', 'w') as c:
             c.write(sk)
 
-        os.system(f'jcli certificate new stake-delegation {pool_id} {pk} stake_pool.cert')
+        os.system(f'jcli certificate new stake-delegation {pk} {pool_id} stake_pool.cert')
         #  os.system(f'jcli certificate sign key.tmp stake_pool.cert stake_pool.signcert')
         os.remove('key.tmp')
 
