@@ -3,8 +3,8 @@ import subprocess, time, pprint, os, getpass, json, sys
 sys.path.append(".")
 
 from casper import CasperCore
-from casper.utils import verify_password, parse_yaml, MyYAML
-yaml = MyYAML()
+from casper.utils import verify_password, parse_yaml, Yaml
+yaml = Yaml()
 
 if os.path.exists("config/settings.yaml") is False:
     exec(open("config/__main__.py").read(), globals())

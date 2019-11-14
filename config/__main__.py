@@ -2,9 +2,9 @@ import sys, platform, getpass
 sys.path.append(".")
 
 import json, json, pprint, sys, sqlite3, os
-from casper.utils import hash256, mk_timestamp, verify_password, MyYAML
+from casper.utils import hash256, mk_timestamp, verify_password, Yaml
 ABSOLUTEPATH = os.path.abspath(os.path.dirname(__file__))
-yaml = MyYAML()
+yaml = Yaml()
 
 with open('package.json', 'r') as json_file:
     package = json.load(json_file)

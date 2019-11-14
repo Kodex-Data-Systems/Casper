@@ -51,7 +51,7 @@ def parse_yaml(input, file=False):
 def date_crop(i):
     return i.split(".")[0].replace("-", "/").replace("T", " ")
 
-class MyYAML(YAML):
+class Yaml(YAML):
     def dump(self, data, stream=None, **kw):
         inefficient = False
         if stream is None:

@@ -1,6 +1,6 @@
 import subprocess, os, pprint, time, requests
-from .utils import get_exec_sh, parse_yaml, MyYAML
-yaml = MyYAML()
+from .utils import get_exec_sh, parse_yaml, Yaml
+yaml = Yaml()
 class Cli(object):
     def __init__(self, settings):
         self.node = settings["node"]

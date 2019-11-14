@@ -2,10 +2,10 @@ import sys, subprocess, time, pprint, os, getpass, json
 from tabulate import tabulate
 
 from casper import CasperCore
-from casper.utils import verify_password, parse_yaml, MyYAML, date_crop
+from casper.utils import verify_password, parse_yaml, Yaml, date_crop
 from janalyze import JAnalyze
 # os.environ["PYTHONIOENCODING"] = "utf-8"
-yaml = MyYAML()
+yaml = Yaml()
 _MENU = """
 Please choose an option:
 
@@ -44,7 +44,7 @@ else:
     if _DEFAULT_CRYPTO is "RAW":
         _DEFAULT_CRYPTO = None
 
-casper = CasperCore(settings, USER_PWD=_USER_PWD, CRYPTO_MOD=_DEFAULT_CRYPTO)
+cspr = CasperCore(settings, USER_PWD=_USER_PWD, CRYPTO_MOD=_DEFAULT_CRYPTO)
 analyze = JAnalyze(settings)
 
 class CliInterface:
@@ -79,8 +79,8 @@ class CliInterface:
 
     def save_acct_by_secret(self, _sk):
         try:
-            secret, public, address = casper.cli.acct_by_secret(_sk)
-            casper.db.save_acct(secret, public, address)
+            secret, public, address = cspr.cli.acct_by_secret(_sk)
+            cspr.db.save_acct(secret, public, address)
             self.typed_text(f'Account Added: {address}', 0.002)
         except:
             print("IMPORT ERROR")
@@ -92,8 +92,8 @@ class CliInterface:
 
             if choice == '1':  # Create.
                 self.clear()
-                _sk, _pk, _ak = casper.cli.create_acct()
-                casper.db.save_acct(_sk, _pk, _ak)
+                _sk, _pk, _ak = cspr.cli.create_acct()
+                cspr.db.save_acct(_sk, _pk, _ak)
                 self.typed_text(f'Account Created: {_ak}', 0.002)
 
             if choice == '2':  # Import existing.
@@ -103,14 +103,14 @@ class CliInterface:
 
             if choice == '3':  # Load.
                 self.clear()
-                myaccounts = casper.db.all_acct()
+                myaccounts = cspr.db.all_acct()
                 if myaccounts is not None:
                     for acct in myaccounts:
                         print(acct[0], acct[1])
 
                     _id = input("\nSelect Acount Number: ")
                     try:
-                        _selected = casper.db.get_acct_by_id(int(_id))
+                        _selected = cspr.db.get_acct_by_id(int(_id))
                         if _selected is not None:
                             self.typed_text(f'Account Loaded: {_selected[1]}', 0.002)
                             self.account = _selected
@@ -129,7 +129,7 @@ class CliInterface:
                     public = self.account[3]
                     print('\nStake Pool ID')
                     print('-' * 33)
-                    casper.cli.create_pool(public, secret, account, pool_name)
+                    cspr.cli.create_pool(public, secret, account, pool_name)
 
                 else:
                     print("You Need To Load An Account First")
@@ -142,7 +142,7 @@ class CliInterface:
                     public = self.account[3]
                     secret = self.account[2]
                     self.clear()
-                    tx = casper.cli.create_delegation_certificate(pool, public, secret, account)
+                    tx = cspr.cli.create_delegation_certificate(pool, public, secret, account)
                     print(f"Delegation Fragment: {tx[0]}")
 
                 else:
@@ -158,7 +158,7 @@ class CliInterface:
                     rounds = input("Send Single Transaction (Y/n): ").lower()
                     if rounds == "y":
                         self.clear()
-                        casper.cli.send_single_tx(
+                        cspr.cli.send_single_tx(
                             amount,
                             sender,
                             receiver,
@@ -167,7 +167,7 @@ class CliInterface:
                     else:
                         self.clear()
                         rounds = int(input("Enter Number Of Cycles: "))
-                        casper.cli.send_multiple_tx(
+                        cspr.cli.send_multiple_tx(
                             amount,
                             sender,
                             receiver,
@@ -192,7 +192,7 @@ class CliInterface:
                     print("No Account Loaded")
                 else:
                     try:
-                        addr, balance, nonce, pools = casper.cli.show_balance(
+                        addr, balance, nonce, pools = cspr.cli.show_balance(
                             self.account[1],
                             raw=False
                         )
@@ -207,12 +207,12 @@ class CliInterface:
 
             if choice == "9": # Show all accounts
                 self.clear()
-                pprint.pprint(casper.db.all_acct())
+                pprint.pprint(cspr.db.all_acct())
 
             if choice == '10': # Message log.
                 self.clear()
                 message_logs = []
-                for log in casper.cli.message_logs():
+                for log in cspr.cli.message_logs():
                     if "Rejected" in log["status"]:
                         _status = log["status"]["Rejected"]["reason"]
                     elif "InABlock" in log["status"]:
@@ -238,15 +238,15 @@ class CliInterface:
 
             if choice == '11': # Node stats.
                 self.clear()
-                pprint.pprint(casper.node.show_node_stats())
+                pprint.pprint(cspr.node.show_node_stats())
 
             if choice == '12': #  Show Peers.
                 self.clear()
-                pprint.pprint(casper.node.show_peers())
+                pprint.pprint(cspr.node.show_peers())
 
             if choice == '13': #  Show Stake Pools.
                 self.clear()
-                pools = casper.node.show_stake_pools()
+                pools = cspr.node.show_stake_pools()
 
                 pprint.pprint(pools)
                 print("\n\n")
@@ -254,7 +254,7 @@ class CliInterface:
 
             if choice == '14': #  Show Stake.
                 self.clear()
-                stake = casper.node.show_stake()["stake"]["pools"]
+                stake = cspr.node.show_stake()["stake"]["pools"]
                 table = tabulate(
                     stake,
                     headers=[
@@ -267,12 +267,12 @@ class CliInterface:
 
             if choice == '15': #  Show Chain Size.
                 self.clear()
-                pprint.pprint(casper.cli.show_blockchain_size())
+                pprint.pprint(cspr.cli.show_blockchain_size())
 
             if choice == '16': #  Show Leaders Logs.
                 self.clear()
-                #  pprint.pprint(casper.node.show_leader_logs())
-                leaderlogs = casper.node.show_leader_logs()
+                #  pprint.pprint(cspr.node.show_leader_logs())
+                leaderlogs = cspr.node.show_leader_logs()
                 if leaderlogs is not None and len(leaderlogs) > 0:
                     header = leaderlogs[0].keys()
                     rows =  [x.values() for x in leaderlogs]
@@ -283,7 +283,7 @@ class CliInterface:
 
             if choice == '17': #  Show Chain Settings.
                 self.clear()
-                pprint.pprint(casper.node.show_settings())
+                pprint.pprint(cspr.node.show_settings())
 
             if choice == "18": #  janalyze.py aggreate blocks
                 self.clear()
@@ -295,7 +295,7 @@ class CliInterface:
 
             if choice == '20': #  Genesis Decode.
                 self.clear()
-                print(casper.cli.genesis_decode())
+                print(cspr.cli.genesis_decode())
 
             if choice == '21': #  Fork Check
                 self.clear()
@@ -311,7 +311,7 @@ class CliInterface:
 
             if choice == 'v': #  Show Versions.
                 self.clear()
-                casper.versions()
+                cspr.versions()
 
             if choice == 'q':  # Quit.
                 self.end_loop = True
@@ -321,7 +321,7 @@ class CliInterface:
 
             if choice == "u":
                 self.clear()
-                print(casper.db.user)
+                print(cspr.db.user)
 
             if choice == "s":
                 self.clear()
@@ -341,7 +341,7 @@ class CliInterface:
                     print("FILE NOT FOUND")
             if choice == "e":
                 self.clear()
-                accts = casper.db.all_acct()
+                accts = cspr.db.all_acct()
                 _accts = []
                 for acct in accts:
                     _accts.append({
