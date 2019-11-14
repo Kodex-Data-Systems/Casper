@@ -429,7 +429,7 @@ class Cli(object):
             self._remove_tmp()
             return False
 
-    def send_multiple_tx(self, amount, sender, reciever, secret, rounds, await_each=True):
+    def send_multiple_tx(self, amount, sender, receiver, secret, rounds, await_each=True):
         nonce = self._get_counter(sender)
         _awaited_nonce = nonce + rounds
         fragments = []
@@ -438,13 +438,13 @@ class Cli(object):
             fragment_id, info = self._send_tx(
                 amount,
                 sender,
-                reciever,
+                receiver,
                 secret,
                 _new_nonce
             )
             print(f"FRAGMENT BROADCASTED {int(x) + 1} / {rounds}: {fragment_id}")
             fragments.append(fragment_id)
-            self.db.save_fragment(sender, fragment_id, amount)
+            self.db.save_fragment(fragment_id, sender, receiver, amount)
 
             if await_each is True:
                 self._await_fragments((fragment_id), _awaited_nonce, sender)
@@ -453,19 +453,23 @@ class Cli(object):
             self._await_fragments(fragments, _awaited_nonce, sender)
         return True
 
-    def send_single_tx(self, amount, sender, reciever, secret, _nonce=None):
+    def send_single_tx(self, amount, sender, receiver, secret, _nonce=None):
         nonce = self._get_counter(sender)
         _awaited_nonce = nonce + 1
         fragment_id, info = self._send_tx(
             amount,
             sender,
-            reciever,
+            receiver,
             secret,
             nonce
         )
-        self.db.save_fragment(sender, fragment_id, amount)
+        self.db.save_fragment(fragment_id, sender, receiver, amount)
         self._await_fragments((fragment_id), _awaited_nonce, sender)
         return True
+
+    def _update_fragments(self, fragments, status="Confirmed"):
+            for fragment in fragments:
+                self.db.update_fragment_status(fragment, status)
 
     def _await_fragments(self, fragment_ids, _awaited_nonce=None, sender=None):
         if isinstance(fragment_ids, str):
@@ -477,6 +481,7 @@ class Cli(object):
         pending = []
         confirmed = []
         rejected = []
+        _r = {}
         while confirmation:
             logs = self.message_logs()
             if sender is not None:
@@ -492,9 +497,11 @@ class Cli(object):
                         pending.append(_fid)
                     elif "InABlock" in log["status"]:
                         confirmed.append(_fid)
+                        self._update_fragments((_fid), "Confirmed")
                     elif "Rejected" in log["status"]:
                         confirmed.append(_fid)
                         rejected.append(log)
+                        self._update_fragments((_fid), log["status"]["Rejected"])
                     else:
                         alllogs.append(log)
 
@@ -507,6 +514,8 @@ class Cli(object):
             else:
                 print("ALL FRAGMENTS CONFIRMED")
                 confirmation = False
+
+            self._update_fragments(fragment_ids)
         return confirmed, rejected, fragment_ids
 
     # def _await_nonce(self, sender, _awaited_nonce):

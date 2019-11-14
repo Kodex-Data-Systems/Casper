@@ -1,4 +1,4 @@
 INSERT INTO fragments (
-  account, fragment_id,
-  value, create_date
-) VALUES (?, ?, ?, ?)
+  fragment_id, sender, receiver,
+  value, create_date, status
+) VALUES (?, ?, ?, ?, ?, ?)

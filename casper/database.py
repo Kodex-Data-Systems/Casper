@@ -1,15 +1,20 @@
 import sys, sqlite3, getpass, os
 import os.path
-from .utils import mk_timestamp, hash256, verify_password
+from .utils import mk_timestamp, hash256, verify_password, Yaml
 ABSOLUTEPATH = os.path.abspath(os.path.dirname(__file__))
-# os.environ["PYTHONIOENCODING"] = "utf-8"
+yaml = Yaml()
 
 class Database(object):
+    exec = None
+    commit = None
     def __init__(self, settings, USER_PWD, module="Fernet"):
+        self.settings = settings
         if "savefragments" in settings:
             self.savefragments = True
         else:
             self.savefragments = False
+
+
         self.cipher = None
         self.cryptomodule = module
         self.cryptomodules = ["Fernet", "PyCrypto"]
@@ -26,6 +31,13 @@ class Database(object):
         self.filepath = settings["dbpath"]
         self.connection = sqlite3.connect(self.filepath)
         self.cursor = self.connection.cursor()
+        self.exec = self.cursor.execute
+        self.commit = self.connection.commit
+
+        if "newfragmenttable" not in settings:
+            self.settings["newfragmenttable"] = True
+            yaml.save_file(self.settings, location="config/settings.yaml")
+            self.delete_table("fragments")
         self._check_tables()
         self._load_cipher(USER_PWD, module)
 
@@ -45,12 +57,21 @@ class Database(object):
             from .aes import AESCipher
             self.cipher = AESCipher(USER_PWD)
 
+    def delete_table(self, name):
+        try:
+            print(f"DROPPING OLD TABLE: {name}")
+            self.exec(f"DROP TABLE {name}")
+            self.commit()
+        except:
+            print("ERROR DROP TABLE")
+
+        return
 #  TOOLS AND HELPERS
     def _check_tables(self):
-        self.cursor.execute(self._load_sql("create_account_table.sql"))
-        self.cursor.execute(self._load_sql("create_user_table.sql"))
-        self.cursor.execute(self._load_sql("create_poolcerts_table.sql"))
-        self.cursor.execute(self._load_sql("create_fragment_table.sql"))
+        self.exec(self._load_sql("create_account_table.sql"))
+        self.exec(self._load_sql("create_user_table.sql"))
+        self.exec(self._load_sql("create_poolcerts_table.sql"))
+        self.exec(self._load_sql("create_fragment_table.sql"))
         return
 
     def _decrypt_rows(self, rows):
@@ -69,18 +90,18 @@ class Database(object):
 
 #  USER QUERIES ######################
     def _create_user(self, hashedpwd, name):
-        self.cursor.execute(
+        self.exec(
             self._load_sql("insert_user.sql"),
             (hashedpwd, name,  mk_timestamp())
         )
-        self.connection.commit()
+        self.commit()
         return
 
     def _get_users(self, user=None):
         if user is None:
-            return self.cursor.execute("SELECT * FROM user").fetchall()
+            return self.exec("SELECT * FROM user").fetchall()
         else:
-            return self.cursor.execute("SELECT * FROM user WHERE name=?", (user,)).fetchall()
+            return self.exec("SELECT * FROM user WHERE name=?", (user,)).fetchall()
 
     def _verify_user(self, userpwd=None, user=None):
 
@@ -115,7 +136,7 @@ class Database(object):
 
 #  ACCOUNT QUERIES
     def all_acct(self):
-        encrypted_rows = self.cursor.execute(
+        encrypted_rows = self.exec(
             "SELECT * FROM accounts WHERE user_id=?",
             (int(self.user[0]),)
         ).fetchall()
@@ -129,7 +150,7 @@ class Database(object):
 
     def get_acct_by_id(self, _id):
         try:
-            encrypted_rows = self.cursor.execute(
+            encrypted_rows = self.exec(
                 "SELECT * FROM accounts WHERE id=?",
                 (_id, )
             ).fetchall()
@@ -162,20 +183,28 @@ class Database(object):
             _pk = self.cipher.encrypt(_pk)
             _crypt_module = self.cryptomodule
 
-        self.cursor.execute(self._load_sql("insert_account.sql"),
+        self.exec(self._load_sql("insert_account.sql"),
             (_acct, _sk,_pk, _crypt_module, mk_timestamp(), int(self.user[0]))
         )
         self.connection.commit()
         return
 
-    def save_fragment(self, account, fragment_id, value):
+    def save_fragment(self, fragment_id, sender, receiver, value):
         if self.savefragments is False:
             return
-        self.cursor.execute(self._load_sql("insert_fragment.sql"),
-            (account, fragment_id, value, mk_timestamp())
+        self.exec(self._load_sql("insert_fragment.sql"),
+            (fragment_id, sender, receiver, value, mk_timestamp(), '')
         )
         print(f"FRAGMENT {fragment_id} SAVED TO DB")
-        self.connection.commit()
+        self.commit()
+        return
+
+    def update_fragment_status(self, fragment_id, status="Confirmed"):
+        try:
+            self.exec(f"UPDATE fragments SET status = '{status}' WHERE fragment_id = '{fragment_id}'")
+            self.commit()
+        except:
+            print(f"Error updating {fragment_id}")
         return
 
     def _acct_exists(self, secret):
