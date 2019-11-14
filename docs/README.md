@@ -12,7 +12,7 @@ Casper is a simple, but powerful, blockchain interface tool designed to be used 
 
 ## Yarn Setup
 
-Run `yarn setup` to load the configuration utility.  You will be prompted to enter enter your local settings, or use defaults, as described below.
+Run `yarn setup` to load the configuration utility.  You will be prompted to enter your local settings, or use defaults, as described below.
 
 
 ```ascii
