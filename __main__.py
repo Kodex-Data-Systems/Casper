@@ -2,7 +2,7 @@ import sys, subprocess, time, pprint, os, getpass, json
 from tabulate import tabulate
 
 from casper import CasperCore
-from casper.utils import verify_password, acct_yaml_str, parse_yaml, MyYAML
+from casper.utils import verify_password, parse_yaml, MyYAML
 from janalyze import JAnalyze
 os.environ["PYTHONIOENCODING"] = "utf-8"
 yaml = MyYAML()
@@ -318,17 +318,12 @@ class CliInterface:
                 accts = casper.db.all_acct()
                 _type = input("EXPORT FORMAT? (json[j] / yaml[y]): ")
                 if _type.lower() in ("yaml", "y"):
-                    if not os.path.exists('./config/accounts'):
-                        os.makedirs('config/accounts')
-                    for acct in accts:
-                        casper.cli._run(acct_yaml_str(acct[2], acct[3], acct[1]))
-                        os.rename(f'./{acct[1]}.yaml', f'./config/accounts/{acct[1]}.yaml')
+                    yaml.save_file(accts, location=f"config/export.yaml")
                 elif _type.lower() in ("json", "j"):
                     with open('config/export.json', 'w') as f:
                         json.dump(accts, f, indent=4)
                 else:
                     print("Invalid format selected")
-
 
 if __name__ == "__main__":
     if sys.platform == 'win32':

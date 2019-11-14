@@ -41,16 +41,6 @@ def get_exec_sh():
 
     return executable
 
-def acct_yaml_str(sk, pk, addr):
-    runstr = f"""
-cat > {addr}.yaml << EOF
-secret_key: {sk}
-public_key: {pk}
-account_address: {addr}
-EOF
-"""
-    return runstr
-
 def parse_yaml(input, file=False):
     if file is True:
         input = Path(input)
