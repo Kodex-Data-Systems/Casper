@@ -317,13 +317,9 @@ class CliInterface:
                 self.clear()
                 analyze.forkcheck()
 
-            if choice == 'f': #  Show Versions.
+            if choice == 'f': #  Show Config.
                 self.clear()
                 pprint.pprint(settings)
-
-            if choice == 'i': #  Show Versions.
-                self.clear()
-                print("USER INFO\n")
 
             if choice == 'v': #  Show Versions.
                 self.clear()
@@ -355,6 +351,7 @@ class CliInterface:
                         self.save_acct_by_secret(iacc["secret"])
                 else:
                     print("FILE NOT FOUND")
+                    
             if choice == "e":
                 self.clear()
                 accts = cspr.db.all_acct()
