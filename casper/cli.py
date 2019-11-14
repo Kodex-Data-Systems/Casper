@@ -116,7 +116,6 @@ class Cli(object):
             raw=True
         )
         parsed_genesis = parse_yaml(decoded_genesis)
-        pprint.pprint(parsed_genesis)
         return decoded_genesis
 
     def create_acct(self):
