@@ -86,12 +86,15 @@ class CliInterface:
             if choice == '2':  # Import existing.
                 self.clear()
                 _sk = input("Input Secret Key: ")
-                secret, public, address = casper.cli.acct_by_secret(_sk)
-                casper.db.save_acct(secret, public, address)
+                try:
+                    secret, public, address = casper.cli.acct_by_secret(_sk)
+                    casper.db.save_acct(secret, public, address)
 
-                self.typed_text(f'Account Added: {address}', 0.002)
-                print('\n\n')
-                self.clear()
+                    self.typed_text(f'Account Added: {address}', 0.002)
+                    print('\n\n')
+                    self.clear()
+                except:
+                    print("IMPORT ERROR")
 
             if choice == '3':  # Load.
                 self.clear()
@@ -134,7 +137,8 @@ class CliInterface:
                     public = self.account[3]
                     secret = self.account[2]
                     self.clear()
-                    casper.cli.create_delegation_certificate(pool, public, secret, account)
+                    tx = casper.cli.create_delegation_certificate(pool, public, secret, account)
+                    print(f"Delegation Fragment: {tx[0]}")
 
                 else:
                     print("You Need To Load An Account First")
@@ -177,18 +181,21 @@ class CliInterface:
                 else:
                     print(f'Loaded Account: {self.account}')
 
-            if choice == '8':  # Check balance.
+            if choice == "8":
                 self.clear()
                 if self.account is None:
                     print("No Account Loaded")
                 else:
-                    self.clear()
                     try:
-                        addr, balance, nonce = casper.cli.show_balance(self.account[1], raw=False)
+                        addr, balance, nonce, pools = casper.cli.show_balance(
+                            self.account[1], raw=False
+                        )
                         print(f"Address: {addr}\nBalance: {balance}\nNonce: {nonce}")
-                        get_pool = (casper.cli.show_balance(self.account[1], raw=True)).split(':')
-                        print(f'Pool: {get_pool[3].strip()[4:-8]}')
-
+                        c = 0
+                        if len(pools) > 0:
+                            for pool in pools:
+                                c = c + 1
+                                print(f"POOL {c}: {pool}")
                     except:
                         print("0")
 
