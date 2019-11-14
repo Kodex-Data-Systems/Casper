@@ -2,7 +2,7 @@ import sys, subprocess, time, pprint, os, getpass, json
 from tabulate import tabulate
 
 from casper import CasperCore
-from casper.utils import verify_password, parse_yaml, MyYAML
+from casper.utils import verify_password, parse_yaml, MyYAML, date_crop
 from janalyze import JAnalyze
 os.environ["PYTHONIOENCODING"] = "utf-8"
 yaml = MyYAML()
@@ -99,15 +99,6 @@ class CliInterface:
             if choice == '2':  # Import existing.
                 self.clear()
                 _sk = input("Input Secret Key: ")
-                # try:
-                #     secret, public, address = casper.cli.acct_by_secret(_sk)
-                #     casper.db.save_acct(secret, public, address)
-                #
-                #     self.typed_text(f'Account Added: {address}', 0.002)
-                #     print('\n\n')
-                #     self.clear()
-                # except:
-                #     print("IMPORT ERROR")
                 self.save_acct_by_secret(_sk)
 
             if choice == '3':  # Load.
@@ -220,17 +211,26 @@ class CliInterface:
 
             if choice == '10': # Message log.
                 self.clear()
-                message_logs = casper.cli.message_logs()
+                message_logs = []
+                for log in casper.cli.message_logs():
+                    if "Rejected" in log["status"]:
+                        _status = log["status"]["Rejected"]["reason"]
+                    elif "InABlock" in log["status"]:
+                        blockhash = log["status"]["InABlock"]["block"]
+                        _status = blockhash[:-20] + "..."
+                    elif "Pending" in log["status"]:
+                        _status = "Pending"
+                    else:
+                        _status = "UNKNOWN"
 
-                l = []
-                for log in message_logs:
-                    l.append({
+                    message_logs.append({
                         "fragment_id": log["fragment_id"],
-                        "last_updated_at": log["last_updated_at"],
-                        "received_at": log["received_at"],
-                        "received_from": log["received_from"]
+                        "last_updated_at": date_crop(log["last_updated_at"]),
+                        "received_at": date_crop(log["received_at"]),
+                        "received_from": log["received_from"],
+                        "status": _status
                     })
-                message_logs = l
+
                 header = message_logs[0].keys()
                 rows =  [x.values() for x in message_logs]
                 table = tabulate(rows, header, tablefmt="psql")

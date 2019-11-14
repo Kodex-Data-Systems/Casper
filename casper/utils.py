@@ -48,7 +48,8 @@ def parse_yaml(input, file=False):
     data = yaml.load(input)
     return data
 
-
+def date_crop(i):
+    return i.split(".")[0].replace("-", "/").replace("T", " ")
 
 class MyYAML(YAML):
     def dump(self, data, stream=None, **kw):
