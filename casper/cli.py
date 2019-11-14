@@ -26,7 +26,7 @@ class Cli(object):
                 return
             if raw is True:
                 return output
-                
+
             return output.replace("\n", "")
 
         except subprocess.CalledProcessError:
@@ -89,7 +89,17 @@ class Cli(object):
                 balance = balance[1]
                 counter = raw_output.split("counter: ")[1].split("delegation:")[0]
                 counter = int(counter)
-                return acct_addr, balance, counter
+
+                #  Update for multiple pools needed
+                get_pool = raw_output.split(':')
+                pool = get_pool[3].strip()[4:-8]
+                pools = pool.split("      - 1    - - ")
+                if len(pools) > 0:
+                    pools[len(pools) - 1] = pools[len(pools) - 1][:-6]
+                else:
+                    pools = pool
+
+                return acct_addr, balance, counter, pools
 
         except Exception as e:
             print(e)
@@ -98,29 +108,10 @@ class Cli(object):
     def message_logs(self, parse=False):
         raw = self._run(
             f'jcli rest v0 message logs -h {self.node}/api',
-            "error message logs"
+            "error message logs",
+            raw=True
         )
-        try:
-            raw = raw.replace("---\n", "")
-            split = raw.split("\n-")
-            logs = []
-
-            for elem in split:
-                obj = {
-                    "fragment_id": elem.split("fragment_id: ")[1].split("\n")[0],
-                    "last_updated_at": elem.split("last_updated_at: ")[1].split("\n")[0],
-                    "received_at": elem.split("received_at: ")[1].split("\n")[0],
-                    "received_from": elem.split("received_from: ")[1].split("\n")[0],
-                    "date": elem.split(': "')[1].replace('"', "").split("\n")[0],
-                }
-
-                logs.append(obj)
-
-            if parse is not False:
-                return logs
-            return raw
-        except:
-            return
+        return raw
 
     def genesis_decode(self):
         decoded_genesis = self._run(
@@ -163,7 +154,7 @@ class Cli(object):
             os.remove('file.staging')
             os.remove('stake_pool.cert')
             os.remove('stake_pool.signcert')
-
+            os.remove('stake_key.sk')
         except:
             return False
 
@@ -214,7 +205,6 @@ class Cli(object):
 
         #  4 Sign the Stake Pool Registration Certificate With The Stake Pool Owner's Secret Key
         os.system(f'echo {sk} > stake_key.sk')
-        #  os.system(f'cat stake_pool.cert | jcli certificate sign -k stake_key.sk > stake_pool.signcert')
         os.system(f'cat stake_pool.cert | jcli certificate get-stake-pool-id | tee stake_pool.id')
 
         fragment_id = self._send_certificate(account, sk)
@@ -222,14 +212,11 @@ class Cli(object):
 
         with open('stake_pool.id', 'r') as f:
             node_id = f.read()
-            #  print('The Node ID is: ', f.read())
-
-
 
         command = f"""
 cat > {pool_name}.yaml << EOF
 genesis:
-  sig_key: {_pool_kes_pk}
+  sig_key: {_pool_kes_sk}
   vrf_key: {_pool_vrf_sk}
   node_id: {node_id}
 EOF
@@ -253,8 +240,7 @@ EOF
         with open('key.tmp', 'w') as c:
             c.write(sk)
 
-        os.system(f'jcli certificate new stake-delegation {pk} {pool_id} stake_pool.cert')
-        #  os.system(f'jcli certificate sign key.tmp stake_pool.cert stake_pool.signcert')
+        os.system(f'jcli certificate new stake-delegation {pk} {pool_id} -o stake_pool.cert')
         os.remove('key.tmp')
 
         with open('stake_pool.cert', 'r') as c, open('stake_pool.signcert', 'r') as s:
@@ -263,11 +249,9 @@ EOF
         with open('stake_pool.cert', 'w') as f:
             f.write(cert_id)
 
-        #  print('Certificate: ', cert_id)
-        #  print()
-        #  print('Signed Certificate: ', signed_id)
-        self._send_certificate(account, sk)
-        return cert_id, signed_id
+        txdetails = self._send_certificate(account, sk)
+        fragmentid = txdetails[0]
+        return fragmentid, cert_id, signed_id
 
     def _send_certificate(self, sender, sk, counter=None):
         if counter is None:
@@ -323,6 +307,7 @@ EOF
             ).decode()
 
             #  8 Finalize the Transaction and Send to Blockchain
+            os.system(f'echo {sk} > stake_key.sk')
             os.system('jcli transaction seal --staging file.staging')
             os.system(f'jcli transaction auth -k stake_key.sk --staging file.staging')
             fragment_id = subprocess.check_output(
@@ -372,6 +357,8 @@ EOF
             print('Unable to connect to node, verify node is online.')
 
     def _send_tx(self, amount, sender, receiver, sk, counter = None):
+        sender = sender.replace("\n", "")
+        receiver = receiver.replace("\n", "")
         _force_send = False
         if counter is None:
             counter = self._get_counter(sender)
@@ -428,17 +415,12 @@ EOF
             if cont == 'y':
                 #  Sender confirms, tx sends, return tx sent.
                 os.system('jcli transaction seal --staging file.staging')
-                #  os.system(
-                #      f'jcli transaction to-message --staging file.staging | jcli rest v0 message post -h {self.node}/api'
-                #  )
                 fragment_id = subprocess.check_output(
                     f'jcli transaction to-message --staging file.staging | jcli rest v0 message post -h {self.node}/api',
                     shell=True,
                     executable=self.executable
                 ).decode()
-
                 fragment_id = fragment_id.replace(" ", "").replace("\n", "")
-                #  print("FRAGMENTID: ", fragment_id)
                 #  Remove temp files
                 self._remove_tmp()
 

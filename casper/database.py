@@ -84,7 +84,6 @@ class Database(object):
         hashedpwd = hash256(userpwd)
         _user_row = self._get_users(user)
 
-
         #  checking if usertable is not empty!
         if len(_user_row) <= 0:
             print("NO USER IN DB")

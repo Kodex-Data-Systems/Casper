@@ -194,6 +194,7 @@ if choice == '4': #  Create Stake Pool
 * account `str`
 
 **RETURNS:**
+* fragment_id `str`
 * cert_id `str`
 * signed_id `str`
 
@@ -316,7 +317,11 @@ list index out of range
 0
 ```
 **RETURNS**
+* acct_addr `str`
 * balance `str`
+* balance `str`
+* counter `int`
+* pools List(addr `str`)
 - - -
 
 ### `cli.send_single_tx(**params)`

@@ -15,9 +15,9 @@ Please choose an option:
 (7) Display Current Address      (8) Check Balance            (9) Show All Accounts
 
 (10) Show Message Log            (11) Show Node stats         (12) Show Established Peers
-(13) Show Blockchain Size        (14) Show Leader Logs        (15) Show Settings
-(16) Aggregate Blocks Produced   (17) Stake Distribution      (18) Genesis Decode
-(19) Fork Check
+(13) Show Stake Pools            (14) Show Stake              (15) Show Blockchain Size
+(16) Show Leader Logs            (17) Show Settings           (18) Aggregate Blocks Produced
+(19) Stake Distribution          (20) Genesis Decode          (21) Fork Check
 
 (v) Show Versions                (i) View User Info           (f) View Config File
 (e) Export All Accounts          (c) Clear Screen             (q) Quit
@@ -86,12 +86,15 @@ class CliInterface:
             if choice == '2':  # Import existing.
                 self.clear()
                 _sk = input("Input Secret Key: ")
-                secret, public, address = casper.cli.acct_by_secret(_sk)
-                casper.db.save_acct(secret, public, address)
+                try:
+                    secret, public, address = casper.cli.acct_by_secret(_sk)
+                    casper.db.save_acct(secret, public, address)
 
-                self.typed_text(f'Account Added: {address}', 0.002)
-                print('\n\n')
-                self.clear()
+                    self.typed_text(f'Account Added: {address}', 0.002)
+                    print('\n\n')
+                    self.clear()
+                except:
+                    print("IMPORT ERROR")
 
             if choice == '3':  # Load.
                 self.clear()
@@ -134,7 +137,8 @@ class CliInterface:
                     public = self.account[3]
                     secret = self.account[2]
                     self.clear()
-                    casper.cli.create_delegation_certificate(pool, public, secret, account)
+                    tx = casper.cli.create_delegation_certificate(pool, public, secret, account)
+                    print(f"Delegation Fragment: {tx[0]}")
 
                 else:
                     print("You Need To Load An Account First")
@@ -177,18 +181,21 @@ class CliInterface:
                 else:
                     print(f'Loaded Account: {self.account}')
 
-            if choice == '8':  # Check balance.
+            if choice == "8":
                 self.clear()
                 if self.account is None:
                     print("No Account Loaded")
                 else:
-                    self.clear()
                     try:
-                        addr, balance, nonce = casper.cli.show_balance(self.account[1], raw=False)
+                        addr, balance, nonce, pools = casper.cli.show_balance(
+                            self.account[1], raw=False
+                        )
                         print(f"Address: {addr}\nBalance: {balance}\nNonce: {nonce}")
-                        get_pool = (casper.cli.show_balance(self.account[1], raw=True)).split(':')
-                        print(f'Pool: {get_pool[3].strip()[4:-8]}')
-
+                        c = 0
+                        if len(pools) > 0:
+                            for pool in pools:
+                                c = c + 1
+                                print(f"POOL {c}: {pool}")
                     except:
                         print("0")
 
@@ -208,32 +215,32 @@ class CliInterface:
                 self.clear()
                 pprint.pprint(casper.node.show_peers())
 
-#            if choice == '13': #  Show Stake Pools.
-#                 self.clear()
-#                pools = casper.node.show_stake_pools()
+            if choice == '13': #  Show Stake Pools.
+                self.clear()
+                pools = casper.node.show_stake_pools()
 
-#                pprint.pprint(pools)
-#                print("\n\n")
-#                self.typed_text(f'Number of registered pools: {str(len(pools))}', 0.004)
+                pprint.pprint(pools)
+                print("\n\n")
+                self.typed_text(f'Number of registered pools: {str(len(pools))}', 0.004)
 
-#            if choice == '14': #  Show Stake.
-#                self.clear()
-#                stake = casper.node.show_stake()["stake"]["pools"]
-#                table = tabulate(
-#                    stake,
-#                    headers=[
-#                        "Hex-encoded stake pool ID",
-#                        "Total pool value"
-#                    ],
-#                    tablefmt="psql"
-#                )
-#                print(table)
+            if choice == '14': #  Show Stake.
+                self.clear()
+                stake = casper.node.show_stake()["stake"]["pools"]
+                table = tabulate(
+                    stake,
+                    headers=[
+                        "Hex-encoded stake pool ID",
+                        "Total pool value"
+                    ],
+                    tablefmt="psql"
+                )
+                print(table)
 
-            if choice == '13': #  Show Chain Size.
+            if choice == '15': #  Show Chain Size.
                 self.clear()
                 pprint.pprint(casper.cli.show_blockchain_size())
 
-            if choice == '14': #  Show Leaders Logs.
+            if choice == '16': #  Show Leaders Logs.
                 self.clear()
                 #  pprint.pprint(casper.node.show_leader_logs())
                 leaderlogs = casper.node.show_leader_logs()
@@ -245,23 +252,23 @@ class CliInterface:
                 else:
                     print("Leader logs are empty")
 
-            if choice == '15': #  Show Chain Settings.
+            if choice == '17': #  Show Chain Settings.
                 self.clear()
                 pprint.pprint(casper.node.show_settings())
 
-            if choice == "16": #  janalyze.py aggreate blocks
+            if choice == "18": #  janalyze.py aggreate blocks
                 self.clear()
                 analyze.aggregate()
 
-            if choice == "17": #  janalyze.py distribution
+            if choice == "19": #  janalyze.py distribution
                 self.clear()
                 analyze.distribution()
 
-            if choice == '18': #  Genesis Decode.
+            if choice == '20': #  Genesis Decode.
                 self.clear()
                 print(casper.cli.genesis_decode())
 
-            if choice == '19': #  Fork Check
+            if choice == '21': #  Fork Check
                 self.clear()
                 analyze.forkcheck()
 
