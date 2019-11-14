@@ -11,7 +11,7 @@
 * Create settings.yaml in `./config`
 
 ```yaml
-version: 0.0.3
+version: 0.0.4
 node: localhost:3101
 platform: Darwin-18.7.0-x86_64-i386-64bit
 dbpath: config/accounts.db
