@@ -20,7 +20,7 @@ cryptomodule: Fernet
 jmpath: /tmp/jormungandr
 ```
 
-## Depencies
+## Dependencies
 * Python 3.6+
 * pip3 install db-sqlite3
 * pip3 install pprint
