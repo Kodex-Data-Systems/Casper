@@ -39,7 +39,7 @@ class CasperCore(object):
 
         self.db = Database(self.settings, USER_PWD, CRYPTO_MOD)
         self.node = Node(self.settings)
-        self.cli = Cli(self.settings)
+        self.cli = Cli(self.settings, self.db)
 
 
         if USER_NAME is None:

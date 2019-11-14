@@ -92,6 +92,7 @@ class CasperSetup(object):
         cursor.execute(self._load_sql("create_account_table.sql"))
         cursor.execute(self._load_sql("create_user_table.sql"))
         cursor.execute(self._load_sql("create_poolcerts_table.sql"))
+        cursor.execute(self._load_sql("create_fragment_table.sql"))
 
         _new_name = input("Enter New Username: ")
         _new_pwd = getpass.getpass("Enter New Password (min 8 chars incl number + specialchars): ")

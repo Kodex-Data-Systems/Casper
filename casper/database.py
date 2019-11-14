@@ -6,6 +6,10 @@ ABSOLUTEPATH = os.path.abspath(os.path.dirname(__file__))
 
 class Database(object):
     def __init__(self, settings, USER_PWD, module="Fernet"):
+        if "savefragments" in settings:
+            self.savefragments = True
+        else:
+            self.savefragments = False
         self.cipher = None
         self.cryptomodule = module
         self.cryptomodules = ["Fernet", "PyCrypto"]
@@ -46,6 +50,7 @@ class Database(object):
         self.cursor.execute(self._load_sql("create_account_table.sql"))
         self.cursor.execute(self._load_sql("create_user_table.sql"))
         self.cursor.execute(self._load_sql("create_poolcerts_table.sql"))
+        self.cursor.execute(self._load_sql("create_fragment_table.sql"))
         return
 
     def _decrypt_rows(self, rows):
@@ -160,6 +165,16 @@ class Database(object):
         self.cursor.execute(self._load_sql("insert_account.sql"),
             (_acct, _sk,_pk, _crypt_module, mk_timestamp(), int(self.user[0]))
         )
+        self.connection.commit()
+        return
+
+    def save_fragment(self, account, fragment_id, value):
+        if self.savefragments is False:
+            return
+        self.cursor.execute(self._load_sql("insert_fragment.sql"),
+            (account, fragment_id, value, mk_timestamp())
+        )
+        print(f"FRAGMENT {fragment_id} SAVED TO DB")
         self.connection.commit()
         return
 

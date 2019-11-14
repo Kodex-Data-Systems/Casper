@@ -2,7 +2,8 @@ import subprocess, os, pprint, time, requests
 from .utils import get_exec_sh, parse_yaml, Yaml
 yaml = Yaml()
 class Cli(object):
-    def __init__(self, settings):
+    def __init__(self, settings, db):
+        self.db = db
         self.node = settings["node"]
         self.storage = settings["jmpath"]
         self.loaded = True
@@ -441,42 +442,87 @@ class Cli(object):
                 secret,
                 _new_nonce
             )
-            print(fragment_id)
+            print(f"FRAGMENT BROADCASTED {int(x) + 1} / {rounds}: {fragment_id}")
             fragments.append(fragment_id)
+            self.db.save_fragment(sender, fragment_id, amount)
+
             if await_each is True:
-                self._await_nonce(sender, _new_nonce)
-        print(f"TOTAL FRAGMENTS: {len(fragments)}")
+                self._await_fragments((fragment_id), _awaited_nonce, sender)
+
         if await_each is False:
-            self._await_nonce(sender, _awaited_nonce)
+            self._await_fragments(fragments, _awaited_nonce, sender)
         return True
 
     def send_single_tx(self, amount, sender, reciever, secret, _nonce=None):
         nonce = self._get_counter(sender)
         _awaited_nonce = nonce + 1
-        self._send_tx(
+        fragment_id, info = self._send_tx(
             amount,
             sender,
             reciever,
             secret,
             nonce
         )
-        self._await_nonce(sender, _awaited_nonce)
+        self.db.save_fragment(sender, fragment_id, amount)
+        self._await_fragments((fragment_id), _awaited_nonce, sender)
         return True
 
-    def _await_nonce(self, sender, _awaited_nonce):
-        print(f"AWAITED NONCE: {_awaited_nonce}")
-        confirmation = True
-        while confirmation:
-            _current_nonce = self._get_counter(sender)
-            #  could happen, shouldnt
-            if _current_nonce is None:
-                self._await_nonce(sender, _awaited_nonce)
+    def _await_fragments(self, fragment_ids, _awaited_nonce=None, sender=None):
+        if isinstance(fragment_ids, str):
+            fragment_ids = [fragment_ids]
 
-            if _current_nonce >= _awaited_nonce:
+        print(f"TOTAL FRAGMENTS: {len(fragment_ids)}")
+        confirmation = True
+        alllogs = []
+        pending = []
+        confirmed = []
+        rejected = []
+        while confirmation:
+            logs = self.message_logs()
+            if sender is not None:
                 _current_nonce = self._get_counter(sender)
-                confirmation = False
-                print(f"TRANSACTIONS CONFIRMED\nCurrent Nonce: {_current_nonce} / {_awaited_nonce}")
             else:
-                _current_nonce = self._get_counter(sender)
-                print(f"Current Nonce: {_current_nonce} / {_awaited_nonce}")
+                _current_nonce = None
+            for log in logs:
+                _fid = log["fragment_id"]
+                if _fid in fragment_ids:
+                    if "Pending" in log["status"]:
+                        if _fid not in confirmed and _fid not in pending:
+                            print(f"TX PENDING: {_fid}")
+                        pending.append(_fid)
+                    elif "InABlock" in log["status"]:
+                        confirmed.append(_fid)
+                    elif "Rejected" in log["status"]:
+                        confirmed.append(_fid)
+                        rejected.append(log)
+                    else:
+                        alllogs.append(log)
+
+            if len(confirmed) < len(fragment_ids):
+                print(f"{len(alllogs)} / {len(fragment_ids)} || NONCE {_current_nonce} / {_awaited_nonce}")
                 time.sleep(5)
+            elif _awaited_nonce >= _current_nonce:
+                print(f"ALL FRAGMENTS CONFIRMED BY NONCE ({_current_nonce} / {_awaited_nonce})")
+                confirmation = False
+            else:
+                print("ALL FRAGMENTS CONFIRMED")
+                confirmation = False
+        return confirmed, rejected, fragment_ids
+
+    # def _await_nonce(self, sender, _awaited_nonce):
+    #     print(f"AWAITED NONCE: {_awaited_nonce}")
+    #     confirmation = True
+    #     while confirmation:
+    #         _current_nonce = self._get_counter(sender)
+    #         #  could happen, shouldnt
+    #         if _current_nonce is None:
+    #             self._await_nonce(sender, _awaited_nonce)
+    #
+    #         if _current_nonce >= _awaited_nonce:
+    #             _current_nonce = self._get_counter(sender)
+    #             confirmation = False
+    #             print(f"TRANSACTIONS CONFIRMED\nCurrent Nonce: {_current_nonce} / {_awaited_nonce}")
+    #         else:
+    #             _current_nonce = self._get_counter(sender)
+    #             print(f"Current Nonce: {_current_nonce} / {_awaited_nonce}")
+    #             time.sleep(5)

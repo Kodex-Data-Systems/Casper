@@ -56,6 +56,9 @@ class Node(object):
     def show_leader_logs(self):
         return self._get(f"{self.url}/api/v0/leaders/logs")
 
+    def show_utxo(self, fragment_id, output_index=255):
+        return self._get(f"{self.url}/api/v0/utxo/{fragment_id}/{output_index}")
+
     def show_balance(self, _acct_id):
         # BUGS!!!
         url = f"{self.url}/api/v0/account/{_acct_id}"

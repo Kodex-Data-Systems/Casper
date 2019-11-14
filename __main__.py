@@ -162,7 +162,7 @@ class CliInterface:
                 else:
                     print("You Need To Load An Account First")
 
-            if choice == '6':  # Send Tx.
+            if choice in ("6", "tx"):  # Send Tx.
                 self.clear()
                 if self.account is not None:
                     sender = self.account[1]
@@ -200,7 +200,7 @@ class CliInterface:
                 else:
                     print(f'Loaded Account: {self.account}')
 
-            if choice == "8":
+            if choice in ("8", "b"):
                 self.clear()
                 if self.account is None:
                     print("No Account Loaded")
@@ -223,7 +223,7 @@ class CliInterface:
                 self.clear()
                 pprint.pprint(cspr.db.all_acct())
 
-            if choice == '10': # Message log.
+            if choice in ("10", "m"): # Message log.
                 self.clear()
                 message_logs = []
                 for log in cspr.cli.message_logs():
@@ -351,7 +351,6 @@ class CliInterface:
                         self.save_acct_by_secret(iacc["secret"])
                 else:
                     print("FILE NOT FOUND")
-                    
             if choice == "e":
                 self.clear()
                 accts = cspr.db.all_acct()
