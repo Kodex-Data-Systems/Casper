@@ -26,7 +26,12 @@
 * pip3 install pprint
 * pip3 install requests
 * pip3 install cryptography
+* pip3 install ruamel.yaml
 * pip3 install tabulate
+
+## Optional requirements
+* sudo apt-get install python3-dev
+* sudo yum install python-devel (CentOS)
 
 **Optional Crypt Package:**
 * pip3 install pycrypto

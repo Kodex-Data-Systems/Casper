@@ -15,7 +15,6 @@ with open('settings.json', 'r') as json_file:
 
 
 casper = CasperCore(settings, USER_PWD)
-
 #  imagine a button would trigger this function
 def create_and_insert_acct():
     _sk, _pk, _ak = casper.cli.create_acct()

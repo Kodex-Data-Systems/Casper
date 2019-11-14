@@ -2,7 +2,7 @@ import sys, subprocess, time, pprint, json, os, getpass
 from tabulate import tabulate
 
 from casper import CasperCore
-from casper.utils import verify_password, acct_yaml_str
+from casper.utils import verify_password, acct_yaml_str, parse_yaml
 from janalyze import JAnalyze
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
@@ -188,14 +188,15 @@ class CliInterface:
                 else:
                     try:
                         addr, balance, nonce, pools = casper.cli.show_balance(
-                            self.account[1], raw=False
+                            self.account[1],
+                            raw=False
                         )
                         print(f"Address: {addr}\nBalance: {balance}\nNonce: {nonce}")
                         c = 0
                         if len(pools) > 0:
                             for pool in pools:
                                 c = c + 1
-                                print(f"POOL {c}: {pool}")
+                                print(f"POOL {c}: {pool[0]} || WEIGHT: {pool[1]}")
                     except:
                         print("0")
 
@@ -205,7 +206,21 @@ class CliInterface:
 
             if choice == '10': # Message log.
                 self.clear()
-                pprint.pprint(casper.cli.message_logs())
+                message_logs = casper.cli.message_logs()
+
+                l = []
+                for log in message_logs:
+                    l.append({
+                        "fragment_id": log["fragment_id"],
+                        "last_updated_at": log["last_updated_at"],
+                        "received_at": log["received_at"],
+                        "received_from": log["received_from"]
+                    })
+                message_logs = l
+                header = message_logs[0].keys()
+                rows =  [x.values() for x in message_logs]
+                table = tabulate(rows, header, tablefmt="psql")
+                print(table)
 
             if choice == '11': # Node stats.
                 self.clear()

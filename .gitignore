@@ -26,3 +26,4 @@ node_secret.yaml
 *.staging
 casper/.DS_Store
 .DS_Store
+*.tar.gz

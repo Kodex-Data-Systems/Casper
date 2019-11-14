@@ -1,5 +1,5 @@
 import subprocess, os, pprint, time, requests
-from .utils import get_exec_sh
+from .utils import get_exec_sh, parse_yaml
 class Cli(object):
     def __init__(self, settings):
         self.node = settings["node"]
@@ -13,7 +13,7 @@ class Cli(object):
         else:
             self.no_jormungandr = False
 
-    def _run(self, runstring, errorstring=None, raw=False):
+    def _run(self, runstring, errorstring=None, raw=False, _parse=False):
 
         try:
             output = subprocess.check_output(
@@ -26,6 +26,9 @@ class Cli(object):
                 return
             if raw is True:
                 return output
+
+            if _parse is True:
+                return parse_yaml(output)
 
             return output.replace("\n", "")
 
@@ -79,45 +82,40 @@ class Cli(object):
         try:
             raw_output = self._run(
                 f'jcli rest v0 account get {acct_addr} -h {self.node}/api',
-                'Unable to view balance, account has not yet received a tx or node is offline.'
+                'Unable to view balance, account has not yet received a tx or node is offline.',
+                raw=True
             )
 
             if raw is True:
                 return raw_output
             else:
-                balance = str(raw_output).split("value: ")
-                balance = balance[1]
-                counter = raw_output.split("counter: ")[1].split("delegation:")[0]
-                counter = int(counter)
-
-                #  Update for multiple pools needed
-                get_pool = raw_output.split(':')
-                pool = get_pool[3].strip()[4:-8]
-                pools = pool.split("      - 1    - - ")
-                if len(pools) > 0:
-                    pools[len(pools) - 1] = pools[len(pools) - 1][:-6]
-                else:
-                    pools = pool
-
+                data = parse_yaml(raw_output)
+                counter = data["counter"]
+                balance = data["value"]
+                pools = []
+                if "delegation" in data:
+                    if "pools" in data["delegation"]:
+                        pools = data["delegation"]["pools"]
                 return acct_addr, balance, counter, pools
 
         except Exception as e:
             print(e)
             return 0
 
-    def message_logs(self, parse=False):
-        raw = self._run(
+    def message_logs(self):
+        return self._run(
             f'jcli rest v0 message logs -h {self.node}/api',
             "error message logs",
-            raw=True
+            _parse=True
         )
-        return raw
 
     def genesis_decode(self):
         decoded_genesis = self._run(
             f"curl -s {self.node}/api/v0/block/{self.genesis} | jcli genesis decode",
             raw=True
         )
+        parsed_genesis = parse_yaml(decoded_genesis)
+        pprint.pprint(parsed_genesis)
         return decoded_genesis
 
     def create_acct(self):
@@ -330,29 +328,21 @@ EOF
 #################### SEND TX #########################
     def _get_coefficient_constant(self):
         #  Extract the tx fee (coefficient and constant) from the node using string slicing.
-        data = subprocess.check_output(
+        data = self._run(
             f'jcli rest v0 settings get -h {self.node}/api',
-            shell=True,
-            executable=self.executable
-        ).decode().replace(' ', '')
+            _parse=True
+        )
 
-        data_dict = dict(s.split(':') for s in (data.split('\n')[7:9]))
-        _coefficient = data_dict['coefficient']
-        _constant = data_dict['constant']
-
-        return int(_coefficient), int(_constant)
+        return int(data["fees"]["coefficient"]), int(data["fees"]["coefficient"])
 
     def _get_counter(self, sender):
         try:
-            #  Extract the required counter.
-            os.system(
-                f'jcli rest v0 account get {sender} -h {self.node}/api > balance.tmp')
-            with open('balance.tmp', 'r') as f:
-                counter = f.read().split()[2]
-            os.remove('balance.tmp')
-
-            return int(counter)
-
+            #  Extract the required counter
+            data = self._run(
+                f'jcli rest v0 account get {sender} -h {self.node}/api',
+                _parse=True
+            )
+            return(int(data["counter"]))
         except IndexError:
             print('Unable to connect to node, verify node is online.')
 

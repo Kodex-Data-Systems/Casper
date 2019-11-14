@@ -1,4 +1,5 @@
-import os, sys, subprocess, json, platform
+import os, sys, subprocess, json, platform, pprint
+from requests import get
 from .node import Node
 from .database import Database
 from .cli import Cli
@@ -67,15 +68,56 @@ class CasperCore(object):
         print(jormungandr_version)
         print(python_version)
 
+    def download_raw_git(self, url, file_name):
+        # open in binary mode
+        return self.cli._run(
+            f"curl -H 'Accept: application/vnd.github.v3.raw' -O -L {url}"
+        )
+
+
+    def update_binaries(self):
+        releases = self.node._get("https://api.github.com/repos/input-output-hk/jormungandr/releases")
+        last = releases[0]
+        key = None
+        url = None
+        _platform = platform.platform().lower()
+
+        if "darwin" in _platform:
+            key = "darwin"
+        ## elifs for other platforms needed
+
+        
+        for item in last["assets"]:
+            if url is not None:
+                continue
+            name = None
+            if "name" in item:
+                if "name" in item:
+                    _name = item["name"]
+                    if "darwin.tar.gz" in _name:
+                        url = item["browser_download_url"]
+                        d = input(f"Download file: {_name}? (y/n) ")
+                        if os.path.isfile(_name) is False and d is "y":
+                            self.download_raw_git(url, _name)
+                            #  MOVE FILES TO INSTALLTION FOLDER ?
+                            print("DOWNLOAD DONE")
+                        return url
+
+
     def verifiy_versions(self):
         version = self.node._get("https://api.github.com/repos/input-output-hk/jormungandr/tags")
         current_version = version[0]["name"]
         installed_version = self.cli._run("jormungandr --version").replace("jormungandr ", "v")
         if current_version != installed_version:
-            print(f"jormungandr is outdated! \nRELEASED VERSION: {current_version}\nYOUR VERSION: {installed_version}")
-            c = input("DO YOU WANT TO CONTINUE? (y/n): ")
-            if c == "n":
+            print(f'\n\nJORMUNGANDR IS OUTDATED! \n\nRELEASED VERSION: {current_version} - YOUR VERSION: {installed_version}')
+            c = input("DO YOU WANT TO CONTINUE / UPDATE / EXIT? (c/u/e): ")
+            if c == "e":
                 sys.exit(2)
+            elif c == "u":
+                self.update_binaries()
+                sys.exit(2)
+            else:
+                print("CONTINUE WITH OLDER VERSION")
 
     def _run(self, runstring, errorstring=None):
         try:

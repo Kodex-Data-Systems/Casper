@@ -6,6 +6,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import re
+from ruamel.yaml import YAML
+from pathlib import Path
 
 def verify_password(password):
     RegexLength=re.compile(r'^\S{8,}$')
@@ -49,3 +51,8 @@ account_address: {addr}
 EOF
 """
     return runstr
+
+def parse_yaml(input):
+    yaml = YAML(typ='safe')
+    data = yaml.load(input)
+    return data
