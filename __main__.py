@@ -27,17 +27,22 @@ if os.path.exists("config/settings.yaml") is False:
     exec(open("config/__main__.py").read(), globals())
     print("\n\nSTARTING CASPER")
 
-_USER_PWD = getpass.getpass("Enter your Password: ")
-
 settings = parse_yaml("config/settings.yaml", file=True)
+
+if "userpwd" in settings:
+    #  saving password in settings file is only thought for dev mode
+    #  use on your own risk
+    _USER_PWD = settings["userpwd"]
+else:
+    _USER_PWD = getpass.getpass("Enter your Password: ")
+
+
 if "cryptomodule" in settings:
     _DEFAULT_CRYPTO = settings["cryptomodule"]
 else:
     _DEFAULT_CRYPTO = input("ENTER CRYPT MODULE (Fernet, PyCrypto, RAW): ")
     if _DEFAULT_CRYPTO is "RAW":
         _DEFAULT_CRYPTO = None
-
-print(yaml.dump(settings))
 
 casper = CasperCore(settings, USER_PWD=_USER_PWD, CRYPTO_MOD=_DEFAULT_CRYPTO)
 analyze = JAnalyze(settings)
