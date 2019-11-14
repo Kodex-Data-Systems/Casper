@@ -1,5 +1,6 @@
 import subprocess, os, pprint, time, requests
-from .utils import get_exec_sh, parse_yaml
+from .utils import get_exec_sh, parse_yaml, MyYAML
+yaml = MyYAML()
 class Cli(object):
     def __init__(self, settings):
         self.node = settings["node"]
@@ -211,20 +212,17 @@ class Cli(object):
         with open('stake_pool.id', 'r') as f:
             node_id = f.read()
 
-        command = f"""
-cat > {pool_name}.yaml << EOF
-genesis:
-  sig_key: {_pool_kes_sk}
-  vrf_key: {_pool_vrf_sk}
-  node_id: {node_id}
-EOF
-"""
-        os.system(command)
-
         if not os.path.exists('./pools'):
             os.makedirs('pools')
 
-        os.rename(f'./{pool_name}.yaml', f'./pools/{pool_name}.yaml')
+        yaml.save_file({
+            "genesis": {
+                "sig_key": _pool_kes_sk,
+                "vrf_key": _pool_vrf_sk,
+                "node_id": node_id,
+            }
+        }, location=f"pools/{pool_name}.yaml")
+
         os.remove('stake_pool.id')
         os.remove('stake_key.sk')
 
