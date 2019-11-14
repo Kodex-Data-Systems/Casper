@@ -15,7 +15,7 @@ with open('package.json', 'r') as json_file:
 class CasperCore(object):
     def __init__(self, settings, USER_PWD=None, CRYPTO_MOD="Fernet", USER_NAME=None):
         if sys.platform == 'win32':
-            print("Windows not supported 🦄")
+            print("Windows not supported")
             sys.exit(2)
 
         self.executable = get_exec_sh()
