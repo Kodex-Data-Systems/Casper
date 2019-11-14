@@ -34,7 +34,7 @@ class CasperSetup(object):
         self.usersettings["version"] = package["version"]
         self.usersettings["node"] = _default_node
         _user_node = input("Input REST API Server Address: ")
-        _user_db = input("Input Database Storage Path: ")
+        _user_db = input("Input Casper Account Database Storage Path: ")
         _user_genesis = input("Input Genesis Hash: ")
         _user_crypto = input("Input Crypto Module: ")
         _user_jmpath = input("Input Blockchain Storage Path: ")
