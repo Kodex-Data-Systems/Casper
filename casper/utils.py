@@ -49,7 +49,10 @@ def parse_yaml(input, file=False):
     return data
 
 def date_crop(i):
-    return i.split(".")[0].replace("-", "/").replace("T", " ")
+    try:
+        return i.split(".")[0].replace("-", "/").replace("T", " ")
+    except:
+        return i
 
 class Yaml(YAML):
     def dump(self, data, stream=None, **kw):

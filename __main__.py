@@ -68,6 +68,20 @@ class CliInterface:
         self.typed_text('CASPER CLI UI v1.2 -- Kodex Data Systems 2019', 0.004)
         print('\n\n')
 
+    def determine_status(self, log):
+        if "Rejected" in log["status"]:
+            _status = log["status"]["Rejected"]["reason"]
+        elif "InABlock" in log["status"]:
+            blockhash = log["status"]["InABlock"]["block"]
+            _status = blockhash[:-20] + "..."
+        elif "Pending" in log["status"]:
+            _status = "Pending"
+        elif "Block" in log["status"]:
+            _status = (log["status"]["Block"]["block"], log["status"]["Block"]["chain_length"])
+        else:
+            _status = "UNKNOWN"
+        return _status
+
     def clear(self):
         cls_platforms = ["linux", "linux2", "darwin"]
         if sys.platform == 'win32':
@@ -213,22 +227,12 @@ class CliInterface:
                 self.clear()
                 message_logs = []
                 for log in cspr.cli.message_logs():
-                    if "Rejected" in log["status"]:
-                        _status = log["status"]["Rejected"]["reason"]
-                    elif "InABlock" in log["status"]:
-                        blockhash = log["status"]["InABlock"]["block"]
-                        _status = blockhash[:-20] + "..."
-                    elif "Pending" in log["status"]:
-                        _status = "Pending"
-                    else:
-                        _status = "UNKNOWN"
-
                     message_logs.append({
                         "fragment_id": log["fragment_id"],
                         "last_updated_at": date_crop(log["last_updated_at"]),
                         "received_at": date_crop(log["received_at"]),
                         "received_from": log["received_from"],
-                        "status": _status
+                        "status": self.determine_status(log)
                     })
 
                 header = message_logs[0].keys()
@@ -272,7 +276,19 @@ class CliInterface:
             if choice == '16': #  Show Leaders Logs.
                 self.clear()
                 #  pprint.pprint(cspr.node.show_leader_logs())
-                leaderlogs = cspr.node.show_leader_logs()
+                leaderlogs = []# cspr.node.show_leader_logs()
+                for llog in cspr.node.show_leader_logs():
+                    _llog = {
+                        "created_at_time": date_crop(llog["created_at_time"]),
+                        "scheduled_at_time": date_crop(llog["scheduled_at_time"]),
+                        "scheduled_at_date": llog["scheduled_at_date"],
+                        "finished_at_time": date_crop(llog["finished_at_time"]),
+                    }
+                    if "wake_at_time" in llog:
+                        _llog["wake_at_time"] = date_crop(llog["wake_at_time"])
+
+                    _llog["status"] = self.determine_status(llog)
+                    leaderlogs.append(_llog)
                 if leaderlogs is not None and len(leaderlogs) > 0:
                     header = leaderlogs[0].keys()
                     rows =  [x.values() for x in leaderlogs]
