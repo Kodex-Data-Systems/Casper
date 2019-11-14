@@ -18,8 +18,8 @@ Please choose an option:
 (16) Show Leader Logs            (17) Show Settings           (18) Aggregate Blocks Produced
 (19) Stake Distribution          (20) Genesis Decode          (21) Fork Check
 
-(v) Show Versions                (i) View User Info           (f) View Config File
-(e) Export All Accounts          (c) Clear Screen             (q) Quit
+(e) Export All Accounts          (i) Import accounts.yaml     (f) View Config File
+(v) Show Versions                (c) Clear Screen             (q) Quit
 
 """
 
@@ -72,6 +72,14 @@ class CliInterface:
         else:
             self.typed_text('Command not compatible with your OS', 0.002)
 
+    def save_acct_by_secret(self, _sk):
+        try:
+            secret, public, address = casper.cli.acct_by_secret(_sk)
+            casper.db.save_acct(secret, public, address)
+            self.typed_text(f'Account Added: {address}', 0.002)
+        except:
+            print("IMPORT ERROR")
+
     def run(self):
         while not self.end_loop:
             print(_MENU)
@@ -86,15 +94,16 @@ class CliInterface:
             if choice == '2':  # Import existing.
                 self.clear()
                 _sk = input("Input Secret Key: ")
-                try:
-                    secret, public, address = casper.cli.acct_by_secret(_sk)
-                    casper.db.save_acct(secret, public, address)
-
-                    self.typed_text(f'Account Added: {address}', 0.002)
-                    print('\n\n')
-                    self.clear()
-                except:
-                    print("IMPORT ERROR")
+                # try:
+                #     secret, public, address = casper.cli.acct_by_secret(_sk)
+                #     casper.db.save_acct(secret, public, address)
+                #
+                #     self.typed_text(f'Account Added: {address}', 0.002)
+                #     print('\n\n')
+                #     self.clear()
+                # except:
+                #     print("IMPORT ERROR")
+                self.save_acct_by_secret(_sk)
 
             if choice == '3':  # Load.
                 self.clear()
@@ -313,15 +322,34 @@ class CliInterface:
                 self.clear()
                 pprint.pprint(settings)
 
+            if choice == "i":
+                self.clear()
+                filepath = input("PATH TO accounts.yaml: ")
+                if os.path.isfile(filepath):
+                    try:
+                        toimport = parse_yaml(filepath, file=True)
+                    except:
+                        print("PARSING ERROR")
+                    for iacc in toimport:
+                        self.save_acct_by_secret(iacc["secret"])
+                else:
+                    print("FILE NOT FOUND")
             if choice == "e":
                 self.clear()
                 accts = casper.db.all_acct()
+                _accts = []
+                for acct in accts:
+                    _accts.append({
+                        "address": acct[1],
+                        "public": acct[3],
+                        "secret": acct[2]
+                    })
                 _type = input("EXPORT FORMAT? (json[j] / yaml[y]): ")
                 if _type.lower() in ("yaml", "y"):
-                    yaml.save_file(accts, location=f"config/export.yaml")
+                    yaml.save_file(_accts, location=f"config/accounts.yaml")
                 elif _type.lower() in ("json", "j"):
-                    with open('config/export.json', 'w') as f:
-                        json.dump(accts, f, indent=4)
+                    with open('config/accounts.json', 'w') as f:
+                        json.dump(_accts, f, indent=4)
                 else:
                     print("Invalid format selected")
 
