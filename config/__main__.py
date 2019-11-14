@@ -2,9 +2,9 @@ import sys, platform, getpass
 sys.path.append(".")
 
 import json, json, pprint, sys, sqlite3, os
-from casper.utils import hash256, mk_timestamp, verify_password
-
+from casper.utils import hash256, mk_timestamp, verify_password, MyYAML
 ABSOLUTEPATH = os.path.abspath(os.path.dirname(__file__))
+yaml = MyYAML()
 
 with open('package.json', 'r') as json_file:
     package = json.load(json_file)
@@ -72,8 +72,8 @@ class CasperSetup(object):
 
     def _save_user_settings(self):
         pprint.pprint(self.usersettings)
-        with open('config/settings.json', 'w') as fp:
-            json.dump(self.usersettings, fp, indent=4)
+        yaml.save_file(self.usersettings, location='config/settings.yaml')
+        return
 
     def _load_sql(self, _file):
         cp = os.path.dirname(__file__)

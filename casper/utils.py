@@ -1,12 +1,11 @@
-import platform
-import base64, hashlib, calendar
+import base64, hashlib, calendar, re, sys, platform
 from datetime import datetime
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import re
 from ruamel.yaml import YAML
+from ruamel.yaml.compat import StringIO
 from pathlib import Path
 
 def verify_password(password):
@@ -52,7 +51,33 @@ EOF
 """
     return runstr
 
-def parse_yaml(input):
+def parse_yaml(input, file=False):
+    if file is True:
+        input = Path(input)
     yaml = YAML(typ='safe')
     data = yaml.load(input)
     return data
+
+
+
+class MyYAML(YAML):
+    def dump(self, data, stream=None, **kw):
+        inefficient = False
+        if stream is None:
+            inefficient = True
+            stream = StringIO()
+        YAML.dump(self, data, stream, **kw)
+        if inefficient:
+            return stream.getvalue()
+
+    def parse(self, input, file=False):
+        if file is True:
+            input = Path(input)
+        yaml = YAML(typ='safe')
+        data = yaml.load(input)
+        return data
+
+    def save_file(self, input, location='config/settings.yaml'):
+        _file = open(location, 'w')
+        _file.write(self.dump(input))
+        return

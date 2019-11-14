@@ -1,12 +1,11 @@
-import sys, subprocess, time, pprint, json, os, getpass
+import sys, subprocess, time, pprint, os, getpass, json
 from tabulate import tabulate
 
 from casper import CasperCore
-from casper.utils import verify_password, acct_yaml_str, parse_yaml
+from casper.utils import verify_password, acct_yaml_str, parse_yaml, MyYAML
 from janalyze import JAnalyze
 os.environ["PYTHONIOENCODING"] = "utf-8"
-
-
+yaml = MyYAML()
 _MENU = """
 Please choose an option:
 
@@ -24,20 +23,21 @@ Please choose an option:
 
 """
 
-if os.path.exists("config/settings.json") is False:
+if os.path.exists("config/settings.yaml") is False:
     exec(open("config/__main__.py").read(), globals())
     print("\n\nSTARTING CASPER")
 
 _USER_PWD = getpass.getpass("Enter your Password: ")
 
-with open('config/settings.json', 'r') as json_file:
-    settings = json.load(json_file)
-    if "cryptomodule" in settings:
-        _DEFAULT_CRYPTO = settings["cryptomodule"]
-    else:
-        _DEFAULT_CRYPTO = input("ENTER CRYPT MODULE (Fernet, PyCrypto, RAW): ")
-        if _DEFAULT_CRYPTO is "RAW":
-            _DEFAULT_CRYPTO = None
+settings = parse_yaml("config/settings.yaml", file=True)
+if "cryptomodule" in settings:
+    _DEFAULT_CRYPTO = settings["cryptomodule"]
+else:
+    _DEFAULT_CRYPTO = input("ENTER CRYPT MODULE (Fernet, PyCrypto, RAW): ")
+    if _DEFAULT_CRYPTO is "RAW":
+        _DEFAULT_CRYPTO = None
+
+print(yaml.dump(settings))
 
 casper = CasperCore(settings, USER_PWD=_USER_PWD, CRYPTO_MOD=_DEFAULT_CRYPTO)
 analyze = JAnalyze(settings)
