@@ -317,9 +317,9 @@ class CliInterface:
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
-        print("Windows not supported 🦄")
+        print(str.encode("Windows not supported 🦄"))
         sys.exit(2)
     cliui = CliInterface()
     cliui.clear()
-    print (9 * " 👻 ")
+    print (9 * str.encode(" 👻 "))
     cliui.run()
