@@ -330,7 +330,7 @@ class Cli(object):
             _parse=True
         )
 
-        return int(data["fees"]["coefficient"]), int(data["fees"]["coefficient"])
+        return int(data["fees"]["coefficient"]), int(data["fees"]["constant"])
 
     def _get_counter(self, sender):
         try:
@@ -431,18 +431,21 @@ class Cli(object):
     def send_multiple_tx(self, amount, sender, reciever, secret, rounds, await_each=True):
         nonce = self._get_counter(sender)
         _awaited_nonce = nonce + rounds
+        fragments = []
         for x in range(rounds):
             _new_nonce = int(nonce) + int(x)
-            self._send_tx(
+            fragment_id, info = self._send_tx(
                 amount,
                 sender,
                 reciever,
                 secret,
                 _new_nonce
             )
+            print(fragment_id)
+            fragments.append(fragment_id)
             if await_each is True:
                 self._await_nonce(sender, _new_nonce)
-
+        print(f"TOTAL FRAGMENTS: {len(fragments)}")
         if await_each is False:
             self._await_nonce(sender, _awaited_nonce)
         return True

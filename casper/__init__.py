@@ -3,7 +3,8 @@ from requests import get
 from .node import Node
 from .database import Database
 from .cli import Cli
-from .utils import get_exec_sh
+from .utils import get_exec_sh, Yaml
+yaml = Yaml()
 
 # os.environ["PYTHONIOENCODING"] = "utf-8"
 
@@ -14,7 +15,7 @@ with open('package.json', 'r') as json_file:
 class CasperCore(object):
     def __init__(self, settings, USER_PWD=None, CRYPTO_MOD="Fernet", USER_NAME=None):
         if sys.platform == 'win32':
-            print("Windows not supported 🦄")
+            print("Windows not supported")
             sys.exit(2)
 
         self.executable = get_exec_sh()
@@ -22,8 +23,13 @@ class CasperCore(object):
 
         if "version" in self.settings:
             self.version = self.settings["version"]
+        elif self.version != version:
+            self.version = version
+            self.settings["version"] = version
+            yaml.save_file(self.settings, location="config/settings.yaml")
         else:
             self.version = version
+
 
         if USER_PWD is None:
             USER_PWD = input("Enter your Password\n")
