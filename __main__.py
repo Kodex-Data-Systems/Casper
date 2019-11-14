@@ -4,7 +4,7 @@ from tabulate import tabulate
 from casper import CasperCore
 from casper.utils import verify_password, parse_yaml, MyYAML, date_crop
 from janalyze import JAnalyze
-os.environ["PYTHONIOENCODING"] = "utf-8"
+# os.environ["PYTHONIOENCODING"] = "utf-8"
 yaml = MyYAML()
 _MENU = """
 Please choose an option:
@@ -360,9 +360,8 @@ class CliInterface:
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
-        print("Windows not supported 🦄")
+        print("Windows not supported")
         sys.exit(2)
     cliui = CliInterface()
     cliui.clear()
-    print (9 * " 👻 ")
     cliui.run()

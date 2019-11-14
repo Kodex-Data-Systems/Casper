@@ -1,5 +1,5 @@
 import subprocess, time, pprint, os, getpass, json, sys
-os.environ["PYTHONIOENCODING"] = "utf-8"
+# os.environ["PYTHONIOENCODING"] = "utf-8"
 sys.path.append(".")
 
 from casper import CasperCore

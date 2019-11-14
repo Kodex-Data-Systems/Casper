@@ -5,7 +5,7 @@ from .database import Database
 from .cli import Cli
 from .utils import get_exec_sh
 
-os.environ["PYTHONIOENCODING"] = "utf-8"
+# os.environ["PYTHONIOENCODING"] = "utf-8"
 
 with open('package.json', 'r') as json_file:
     package = json.load(json_file)
@@ -86,7 +86,7 @@ class CasperCore(object):
             key = "darwin"
         ## elifs for other platforms needed
 
-        
+
         for item in last["assets"]:
             if url is not None:
                 continue
@@ -110,7 +110,7 @@ class CasperCore(object):
         installed_version = self.cli._run("jormungandr --version").replace("jormungandr ", "v")
         if current_version != installed_version:
             print(f'\n\nJORMUNGANDR IS OUTDATED! \n\nRELEASED VERSION: {current_version} - YOUR VERSION: {installed_version}')
-            c = input("DO YOU WANT TO CONTINUE / UPDATE / EXIT? (c/u/e): ")
+            c = input("DO YOU WANT TO CONTINUE / EXIT? (c/e): ")
             if c == "e":
                 sys.exit(2)
             elif c == "u":
