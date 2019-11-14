@@ -1,24 +1,24 @@
 # Settings
-## Example settings.json
-* Create settings.json in rootdir
-```json
-{
-   "version": "0.0.3",
-   "node": "http://localhost:3101",
-   "platform": "Darwin-15.6.0-x86_64-i386-64bit",
-   "dbpath": "accounts.db",
-   "genesis": "c63a07f3e0db52c9abf886453316a1698d41a77023972c708345acf6645a8c0c",
-   "cryptomodule": "Fernet",
-   "jmpath": "/tmp/jormungandr"
-}
-```
 
 # Usage
+## Run CLI UI
+* `python3 .` or `npm run casper` or `yarn casper`
+
 ## Run Setup
 * or run `python3 config` or `yarn setup` to create a config file
 
-## Run CLI UI
-* `python3 .` or `npm run casper` or `yarn casper`
+## Example settings.yaml
+* Create settings.yaml in `./config`
+
+```yaml
+version: 0.0.3
+node: localhost:3101
+platform: Darwin-18.7.0-x86_64-i386-64bit
+dbpath: config/accounts.db
+genesis: 0c6db1bc6b4794c8d3913529ebe6ba986684c3b23bfe4879fde37dabbc71ba93
+cryptomodule: Fernet
+jmpath: /tmp/jormungandr
+```
 
 ## Depencies
 * Python 3.6+
