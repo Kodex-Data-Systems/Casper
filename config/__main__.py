@@ -2,9 +2,9 @@ import sys, platform, getpass
 sys.path.append(".")
 
 import json, json, pprint, sys, sqlite3, os
-from casper.utils import hash256, mk_timestamp, verify_password
-
+from casper.utils import hash256, mk_timestamp, verify_password, Yaml
 ABSOLUTEPATH = os.path.abspath(os.path.dirname(__file__))
+yaml = Yaml()
 
 with open('package.json', 'r') as json_file:
     package = json.load(json_file)
@@ -34,7 +34,7 @@ class CasperSetup(object):
         self.usersettings["version"] = package["version"]
         self.usersettings["node"] = _default_node
         _user_node = input("Input REST API Server Address: ")
-        _user_db = input("Input Database Storage Path: ")
+        _user_db = input("Input Casper Account Database Storage Path: ")
         _user_genesis = input("Input Genesis Hash: ")
         _user_crypto = input("Input Crypto Module: ")
         _user_jmpath = input("Input Blockchain Storage Path: ")
@@ -72,8 +72,8 @@ class CasperSetup(object):
 
     def _save_user_settings(self):
         pprint.pprint(self.usersettings)
-        with open('config/settings.json', 'w') as fp:
-            json.dump(self.usersettings, fp, indent=4)
+        yaml.save_file(self.usersettings, location='config/settings.yaml')
+        return
 
     def _load_sql(self, _file):
         cp = os.path.dirname(__file__)

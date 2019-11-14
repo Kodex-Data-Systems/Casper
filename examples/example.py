@@ -1,21 +1,26 @@
-import pprint, json
-
-import sys
+import subprocess, time, pprint, os, getpass, json, sys
+# os.environ["PYTHONIOENCODING"] = "utf-8"
 sys.path.append(".")
 
 from casper import CasperCore
-from casper.utils import verify_password
-USER_PWD = input("Enter your password\n")
+from casper.utils import verify_password, parse_yaml, Yaml
+yaml = Yaml()
 
-if verify_password(USER_PWD) is False:
-    print("PASSWORD IS NOT STRONG ENOUGH")
+if os.path.exists("config/settings.yaml") is False:
+    exec(open("config/__main__.py").read(), globals())
+    print("\n\nSTARTING CASPER")
 
-with open('settings.json', 'r') as json_file:
-    settings = json.load(json_file)
+settings = parse_yaml("config/settings.yaml", file=True)
+
+if "userpwd" in settings:
+    #  saving password in settings file is only thought for dev mode
+    #  use on your own risk
+    _USER_PWD = settings["userpwd"]
+else:
+    _USER_PWD = getpass.getpass("Enter your Password: ")
 
 
-casper = CasperCore(settings, USER_PWD)
-
+casper = CasperCore(settings, _USER_PWD)
 #  imagine a button would trigger this function
 def create_and_insert_acct():
     _sk, _pk, _ak = casper.cli.create_acct()

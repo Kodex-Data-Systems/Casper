@@ -1,11 +1,12 @@
-import platform
-import base64, hashlib, calendar
+import base64, hashlib, calendar, re, sys, platform
 from datetime import datetime
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import re
+from ruamel.yaml import YAML
+from ruamel.yaml.compat import StringIO
+from pathlib import Path
 
 def verify_password(password):
     RegexLength=re.compile(r'^\S{8,}$')
@@ -40,12 +41,34 @@ def get_exec_sh():
 
     return executable
 
-def acct_yaml_str(sk, pk, addr):
-    runstr = f"""
-cat > {addr}.yaml << EOF
-secret_key: {sk}
-public_key: {pk}
-account_address: {addr}
-EOF
-"""
-    return runstr
+def parse_yaml(input, file=False):
+    if file is True:
+        input = Path(input)
+    yaml = YAML(typ='safe')
+    data = yaml.load(input)
+    return data
+
+def date_crop(i):
+    return i.split(".")[0].replace("-", "/").replace("T", " ")
+
+class Yaml(YAML):
+    def dump(self, data, stream=None, **kw):
+        inefficient = False
+        if stream is None:
+            inefficient = True
+            stream = StringIO()
+        YAML.dump(self, data, stream, **kw)
+        if inefficient:
+            return stream.getvalue()
+
+    def parse(self, input, file=False):
+        if file is True:
+            input = Path(input)
+        yaml = YAML(typ='safe')
+        data = yaml.load(input)
+        return data
+
+    def save_file(self, input, location='config/settings.yaml'):
+        _file = open(location, 'w')
+        _file.write(self.dump(input))
+        return

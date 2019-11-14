@@ -1,12 +1,11 @@
-import sys, subprocess, time, pprint, json, os, getpass
+import sys, subprocess, time, pprint, os, getpass, json
 from tabulate import tabulate
 
 from casper import CasperCore
-from casper.utils import verify_password, acct_yaml_str
+from casper.utils import verify_password, parse_yaml, Yaml, date_crop
 from janalyze import JAnalyze
-os.environ["PYTHONIOENCODING"] = "utf-8"
-
-
+# os.environ["PYTHONIOENCODING"] = "utf-8"
+yaml = Yaml()
 _MENU = """
 Please choose an option:
 
@@ -19,27 +18,33 @@ Please choose an option:
 (16) Show Leader Logs            (17) Show Settings           (18) Aggregate Blocks Produced
 (19) Stake Distribution          (20) Genesis Decode          (21) Fork Check
 
-(v) Show Versions                (i) View User Info           (f) View Config File
-(e) Export All Accounts          (c) Clear Screen             (q) Quit
+(e) Export All Accounts          (i) Import accounts.yaml     (f) View Config File
+(v) Show Versions                (c) Clear Screen             (q) Quit
 
 """
 
-if os.path.exists("config/settings.json") is False:
+if os.path.exists("config/settings.yaml") is False:
     exec(open("config/__main__.py").read(), globals())
     print("\n\nSTARTING CASPER")
 
-_USER_PWD = getpass.getpass("Enter your Password: ")
+settings = parse_yaml("config/settings.yaml", file=True)
 
-with open('config/settings.json', 'r') as json_file:
-    settings = json.load(json_file)
-    if "cryptomodule" in settings:
-        _DEFAULT_CRYPTO = settings["cryptomodule"]
-    else:
-        _DEFAULT_CRYPTO = input("ENTER CRYPT MODULE (Fernet, PyCrypto, RAW): ")
-        if _DEFAULT_CRYPTO is "RAW":
-            _DEFAULT_CRYPTO = None
+if "userpwd" in settings:
+    #  saving password in settings file is only thought for dev mode
+    #  use on your own risk
+    _USER_PWD = settings["userpwd"]
+else:
+    _USER_PWD = getpass.getpass("Enter your Password: ")
 
-casper = CasperCore(settings, USER_PWD=_USER_PWD, CRYPTO_MOD=_DEFAULT_CRYPTO)
+
+if "cryptomodule" in settings:
+    _DEFAULT_CRYPTO = settings["cryptomodule"]
+else:
+    _DEFAULT_CRYPTO = input("ENTER CRYPT MODULE (Fernet, PyCrypto, RAW): ")
+    if _DEFAULT_CRYPTO is "RAW":
+        _DEFAULT_CRYPTO = None
+
+cspr = CasperCore(settings, USER_PWD=_USER_PWD, CRYPTO_MOD=_DEFAULT_CRYPTO)
 analyze = JAnalyze(settings)
 
 class CliInterface:
@@ -72,6 +77,14 @@ class CliInterface:
         else:
             self.typed_text('Command not compatible with your OS', 0.002)
 
+    def save_acct_by_secret(self, _sk):
+        try:
+            secret, public, address = cspr.cli.acct_by_secret(_sk)
+            cspr.db.save_acct(secret, public, address)
+            self.typed_text(f'Account Added: {address}', 0.002)
+        except:
+            print("IMPORT ERROR")
+
     def run(self):
         while not self.end_loop:
             print(_MENU)
@@ -79,33 +92,25 @@ class CliInterface:
 
             if choice == '1':  # Create.
                 self.clear()
-                _sk, _pk, _ak = casper.cli.create_acct()
-                casper.db.save_acct(_sk, _pk, _ak)
+                _sk, _pk, _ak = cspr.cli.create_acct()
+                cspr.db.save_acct(_sk, _pk, _ak)
                 self.typed_text(f'Account Created: {_ak}', 0.002)
 
             if choice == '2':  # Import existing.
                 self.clear()
                 _sk = input("Input Secret Key: ")
-                try:
-                    secret, public, address = casper.cli.acct_by_secret(_sk)
-                    casper.db.save_acct(secret, public, address)
-
-                    self.typed_text(f'Account Added: {address}', 0.002)
-                    print('\n\n')
-                    self.clear()
-                except:
-                    print("IMPORT ERROR")
+                self.save_acct_by_secret(_sk)
 
             if choice == '3':  # Load.
                 self.clear()
-                myaccounts = casper.db.all_acct()
+                myaccounts = cspr.db.all_acct()
                 if myaccounts is not None:
                     for acct in myaccounts:
                         print(acct[0], acct[1])
 
                     _id = input("\nSelect Acount Number: ")
                     try:
-                        _selected = casper.db.get_acct_by_id(int(_id))
+                        _selected = cspr.db.get_acct_by_id(int(_id))
                         if _selected is not None:
                             self.typed_text(f'Account Loaded: {_selected[1]}', 0.002)
                             self.account = _selected
@@ -124,7 +129,7 @@ class CliInterface:
                     public = self.account[3]
                     print('\nStake Pool ID')
                     print('-' * 33)
-                    casper.cli.create_pool(public, secret, account, pool_name)
+                    cspr.cli.create_pool(public, secret, account, pool_name)
 
                 else:
                     print("You Need To Load An Account First")
@@ -137,7 +142,7 @@ class CliInterface:
                     public = self.account[3]
                     secret = self.account[2]
                     self.clear()
-                    tx = casper.cli.create_delegation_certificate(pool, public, secret, account)
+                    tx = cspr.cli.create_delegation_certificate(pool, public, secret, account)
                     print(f"Delegation Fragment: {tx[0]}")
 
                 else:
@@ -153,7 +158,7 @@ class CliInterface:
                     rounds = input("Send Single Transaction (Y/n): ").lower()
                     if rounds == "y":
                         self.clear()
-                        casper.cli.send_single_tx(
+                        cspr.cli.send_single_tx(
                             amount,
                             sender,
                             receiver,
@@ -162,7 +167,7 @@ class CliInterface:
                     else:
                         self.clear()
                         rounds = int(input("Enter Number Of Cycles: "))
-                        casper.cli.send_multiple_tx(
+                        cspr.cli.send_multiple_tx(
                             amount,
                             sender,
                             receiver,
@@ -187,37 +192,61 @@ class CliInterface:
                     print("No Account Loaded")
                 else:
                     try:
-                        addr, balance, nonce, pools = casper.cli.show_balance(
-                            self.account[1], raw=False
+                        addr, balance, nonce, pools = cspr.cli.show_balance(
+                            self.account[1],
+                            raw=False
                         )
                         print(f"Address: {addr}\nBalance: {balance}\nNonce: {nonce}")
                         c = 0
                         if len(pools) > 0:
                             for pool in pools:
                                 c = c + 1
-                                print(f"POOL {c}: {pool}")
+                                print(f"POOL {c}: {pool[0]} || WEIGHT: {pool[1]}")
                     except:
                         print("0")
 
             if choice == "9": # Show all accounts
                 self.clear()
-                pprint.pprint(casper.db.all_acct())
+                pprint.pprint(cspr.db.all_acct())
 
             if choice == '10': # Message log.
                 self.clear()
-                pprint.pprint(casper.cli.message_logs())
+                message_logs = []
+                for log in cspr.cli.message_logs():
+                    if "Rejected" in log["status"]:
+                        _status = log["status"]["Rejected"]["reason"]
+                    elif "InABlock" in log["status"]:
+                        blockhash = log["status"]["InABlock"]["block"]
+                        _status = blockhash[:-20] + "..."
+                    elif "Pending" in log["status"]:
+                        _status = "Pending"
+                    else:
+                        _status = "UNKNOWN"
+
+                    message_logs.append({
+                        "fragment_id": log["fragment_id"],
+                        "last_updated_at": date_crop(log["last_updated_at"]),
+                        "received_at": date_crop(log["received_at"]),
+                        "received_from": log["received_from"],
+                        "status": _status
+                    })
+
+                header = message_logs[0].keys()
+                rows =  [x.values() for x in message_logs]
+                table = tabulate(rows, header, tablefmt="psql")
+                print(table)
 
             if choice == '11': # Node stats.
                 self.clear()
-                pprint.pprint(casper.node.show_node_stats())
+                pprint.pprint(cspr.node.show_node_stats())
 
             if choice == '12': #  Show Peers.
                 self.clear()
-                pprint.pprint(casper.node.show_peers())
+                pprint.pprint(cspr.node.show_peers())
 
             if choice == '13': #  Show Stake Pools.
                 self.clear()
-                pools = casper.node.show_stake_pools()
+                pools = cspr.node.show_stake_pools()
 
                 pprint.pprint(pools)
                 print("\n\n")
@@ -225,7 +254,7 @@ class CliInterface:
 
             if choice == '14': #  Show Stake.
                 self.clear()
-                stake = casper.node.show_stake()["stake"]["pools"]
+                stake = cspr.node.show_stake()["stake"]["pools"]
                 table = tabulate(
                     stake,
                     headers=[
@@ -238,12 +267,12 @@ class CliInterface:
 
             if choice == '15': #  Show Chain Size.
                 self.clear()
-                pprint.pprint(casper.cli.show_blockchain_size())
+                pprint.pprint(cspr.cli.show_blockchain_size())
 
             if choice == '16': #  Show Leaders Logs.
                 self.clear()
-                #  pprint.pprint(casper.node.show_leader_logs())
-                leaderlogs = casper.node.show_leader_logs()
+                #  pprint.pprint(cspr.node.show_leader_logs())
+                leaderlogs = cspr.node.show_leader_logs()
                 if leaderlogs is not None and len(leaderlogs) > 0:
                     header = leaderlogs[0].keys()
                     rows =  [x.values() for x in leaderlogs]
@@ -254,7 +283,7 @@ class CliInterface:
 
             if choice == '17': #  Show Chain Settings.
                 self.clear()
-                pprint.pprint(casper.node.show_settings())
+                pprint.pprint(cspr.node.show_settings())
 
             if choice == "18": #  janalyze.py aggreate blocks
                 self.clear()
@@ -266,7 +295,7 @@ class CliInterface:
 
             if choice == '20': #  Genesis Decode.
                 self.clear()
-                print(casper.cli.genesis_decode())
+                print(cspr.cli.genesis_decode())
 
             if choice == '21': #  Fork Check
                 self.clear()
@@ -282,7 +311,7 @@ class CliInterface:
 
             if choice == 'v': #  Show Versions.
                 self.clear()
-                casper.versions()
+                cspr.versions()
 
             if choice == 'q':  # Quit.
                 self.end_loop = True
@@ -292,34 +321,47 @@ class CliInterface:
 
             if choice == "u":
                 self.clear()
-                print(casper.db.user)
+                print(cspr.db.user)
 
             if choice == "s":
                 self.clear()
                 pprint.pprint(settings)
 
+            if choice == "i":
+                self.clear()
+                filepath = input("PATH TO accounts.yaml: ")
+                if os.path.isfile(filepath):
+                    try:
+                        toimport = parse_yaml(filepath, file=True)
+                    except:
+                        print("PARSING ERROR")
+                    for iacc in toimport:
+                        self.save_acct_by_secret(iacc["secret"])
+                else:
+                    print("FILE NOT FOUND")
             if choice == "e":
                 self.clear()
-                accts = casper.db.all_acct()
+                accts = cspr.db.all_acct()
+                _accts = []
+                for acct in accts:
+                    _accts.append({
+                        "address": acct[1],
+                        "public": acct[3],
+                        "secret": acct[2]
+                    })
                 _type = input("EXPORT FORMAT? (json[j] / yaml[y]): ")
                 if _type.lower() in ("yaml", "y"):
-                    if not os.path.exists('./config/accounts'):
-                        os.makedirs('config/accounts')
-                    for acct in accts:
-                        casper.cli._run(acct_yaml_str(acct[2], acct[3], acct[1]))
-                        os.rename(f'./{acct[1]}.yaml', f'./config/accounts/{acct[1]}.yaml')
+                    yaml.save_file(_accts, location=f"config/accounts.yaml")
                 elif _type.lower() in ("json", "j"):
-                    with open('config/export.json', 'w') as f:
-                        json.dump(accts, f, indent=4)
+                    with open('config/accounts.json', 'w') as f:
+                        json.dump(_accts, f, indent=4)
                 else:
                     print("Invalid format selected")
 
-
 if __name__ == "__main__":
     if sys.platform == 'win32':
-        print(str.encode("Windows not supported 🦄"))
+        print("Windows not supported")
         sys.exit(2)
     cliui = CliInterface()
     cliui.clear()
-    print (9 * str.encode(" 👻 "))
     cliui.run()

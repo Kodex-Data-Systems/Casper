@@ -12,6 +12,7 @@ accounts.db
 *.id
 /pools
 config/*.yaml
+config/*.json
 casper/*.yaml
 config/accounts
 backup.txt
@@ -26,3 +27,4 @@ node_secret.yaml
 *.staging
 casper/.DS_Store
 .DS_Store
+*.tar.gz
