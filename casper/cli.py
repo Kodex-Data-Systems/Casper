@@ -210,7 +210,7 @@ class Cli(object):
         print('\nFragment ID: ', fragment_id[0])
 
         with open('stake_pool.id', 'r') as f:
-            node_id = f.read()
+            node_id = f.read()[:-1]
 
         if not os.path.exists('./pools'):
             os.makedirs('pools')
