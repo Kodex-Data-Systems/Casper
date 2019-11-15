@@ -506,10 +506,10 @@ class Cli(object):
                         alllogs.append(log)
 
             if len(confirmed) < len(fragment_ids):
-                print(f"{len(alllogs)} / {len(fragment_ids)} || NONCE {_current_nonce} / {_awaited_nonce}")
+                print(f"{len(alllogs)} / {len(fragment_ids)} || NONCE {int(_current_nonce)} / {int(_awaited_nonce)}")
                 time.sleep(5)
             elif _awaited_nonce >= _current_nonce:
-                print(f"ALL FRAGMENTS CONFIRMED BY NONCE ({_current_nonce} / {_awaited_nonce})")
+                print(f"ALL FRAGMENTS CONFIRMED BY NONCE ({int(_current_nonce)} / {int(_awaited_nonce)})")
                 confirmation = False
             else:
                 print("ALL FRAGMENTS CONFIRMED")
