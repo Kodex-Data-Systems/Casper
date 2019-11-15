@@ -28,3 +28,5 @@ node_secret.yaml
 casper/.DS_Store
 .DS_Store
 *.tar.gz
+.travis.yml
+*.db-journal
