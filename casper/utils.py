@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import base64, hashlib, calendar, re, sys, platform
 from datetime import datetime
 from cryptography.fernet import Fernet

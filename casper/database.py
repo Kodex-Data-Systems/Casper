@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import sys, sqlite3, getpass, os
 import os.path
 from .utils import mk_timestamp, hash256, verify_password, Yaml

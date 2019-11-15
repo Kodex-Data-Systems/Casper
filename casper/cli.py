@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import subprocess, os, pprint, time, requests
 from .utils import get_exec_sh, parse_yaml, Yaml
 yaml = Yaml()

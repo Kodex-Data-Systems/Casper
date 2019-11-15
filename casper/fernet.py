@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import base64, os
 from .utils import hash256
 from cryptography.fernet import Fernet
