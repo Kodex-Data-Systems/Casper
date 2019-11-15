@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os, sys, subprocess, json, platform, pprint
 from requests import get
 from .node import Node

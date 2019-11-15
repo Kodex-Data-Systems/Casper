@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import subprocess, requests, sys
 import urllib.request
 from .utils import get_exec_sh

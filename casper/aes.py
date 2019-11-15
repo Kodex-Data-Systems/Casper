@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import base64, hashlib, os
 from Crypto import Random
 from Crypto.Cipher import AES
