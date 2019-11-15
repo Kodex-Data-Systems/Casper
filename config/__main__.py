@@ -1,7 +1,7 @@
-import sys, platform, getpass
+import sys
 sys.path.append(".")
 
-import json, json, pprint, sys, sqlite3, os
+import json, json, pprint, sys, sqlite3, os, platform, getpass
 from casper.utils import hash256, mk_timestamp, verify_password, Yaml
 ABSOLUTEPATH = os.path.abspath(os.path.dirname(__file__))
 yaml = Yaml()
@@ -79,7 +79,7 @@ class CasperSetup(object):
         cp = os.path.dirname(__file__)
         if cp == ".":
             _path = os.path.join(os.path.dirname(__file__), "casper/sql/" + _file)
-        elif cp == "./config":
+        elif cp in ("./config", "config"):
             _path = os.path.join(os.path.dirname(__file__), "../casper/sql/" + _file)
 
         with open (_path, "r") as file:
