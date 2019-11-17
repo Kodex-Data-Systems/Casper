@@ -318,7 +318,10 @@ class CliInterface:
 
             if choice == '21': #  Fork Check
                 self.clear()
-                analyze.forkcheck()
+                try:
+                    analyze.forkcheck()
+                except:
+                    print("ERROR FORK CHECK\n")
 
             if choice == 'f': #  Show Config.
                 self.clear()

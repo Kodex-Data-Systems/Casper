@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import base64, hashlib, calendar, re, sys, platform
+import base64, hashlib, calendar, re, sys, platform, subprocess
 from datetime import datetime
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
@@ -56,6 +56,30 @@ def date_crop(i):
         return i.split(".")[0].replace("-", "/").replace("T", " ")
     except:
         return i
+
+def runcli(runstring, errorstring=None, raw=False, _parse=False):
+    try:
+        output = subprocess.check_output(
+            str(runstring),
+            shell=True,
+            executable=get_exec_sh()
+        ).decode()
+
+        if output.find("failed to make a REST request") < -1:
+            return
+        if raw is True:
+            return output
+
+        if _parse is True:
+            return parse_yaml(output)
+
+        return output.replace("\n", "")
+
+    except subprocess.CalledProcessError:
+        if errorstring is None:
+            print(f'Error running command: {runstring}\n')
+        else:
+            print(str(errorstring))
 
 class Yaml(YAML):
     def dump(self, data, stream=None, **kw):

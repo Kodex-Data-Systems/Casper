@@ -30,3 +30,4 @@ casper/.DS_Store
 *.tar.gz
 .travis.yml
 *.db-journal
+config/nodeconfig.py
