@@ -442,6 +442,8 @@ class Cli(object):
                 secret,
                 _new_nonce
             )
+            #  Delay between tx sends. Used for network testing only.
+            #time.sleep(3)
             print(f"FRAGMENT BROADCASTED {int(x) + 1} / {rounds}: {fragment_id}")
             fragments.append(fragment_id)
             self.db.save_fragment(fragment_id, sender, receiver, amount)
