@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import argparse, requests, os, json, sys
 from argparse import RawTextHelpFormatter
 from __init__ import JAnalyze

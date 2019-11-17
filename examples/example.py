@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import subprocess, time, pprint, os, getpass, json, sys
 # os.environ["PYTHONIOENCODING"] = "utf-8"
 sys.path.append(".")
