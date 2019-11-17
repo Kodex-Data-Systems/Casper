@@ -44,6 +44,8 @@ class CasperSetup(object):
 
         self.usersettings["platform"] = platform.platform()
         if "http" in _user_node:
+            if "/api" in _user_node:
+                _user_node = _user_node.replace("/api", "")
             self.usersettings["node"] = _user_node
 
         if ".db" in _user_db:
