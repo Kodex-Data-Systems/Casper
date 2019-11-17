@@ -19,7 +19,7 @@ Please choose an option:
 (10) Show Message Log            (11) Show Node stats         (12) Show Established Peers
 (13) Show Stake Pools            (14) Show Stake              (15) Show Blockchain Size
 (16) Show Leader Logs            (17) Show Settings           (18) Aggregate Blocks Produced
-(19) Stake Distribution          (20) Genesis Decode          (21) Fork Check
+(19) Stake Distribution          (20) Genesis Decode          (21) Lost Blocks
 
 (e) Export All Accounts          (i) Import accounts.yaml     (f) View Config File
 (v) Show Versions                (c) Clear Screen             (q) Quit
@@ -316,9 +316,9 @@ class CliInterface:
                 self.clear()
                 print(cspr.cli.genesis_decode())
 
-            if choice == '21': #  Fork Check
+            if choice == '21': #  Lost Blocks
                 self.clear()
-                analyze.forkcheck()
+                analyze.lostblocks()
 
             if choice == 'f': #  Show Config.
                 self.clear()
