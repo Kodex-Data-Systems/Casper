@@ -70,10 +70,11 @@ class JAnalyze():
             raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
         return ivalue
 
-    def forkcheck(self):
+    def lostblocks(self):
         thisblockhex = self.get_tip()
         opportunities = 0
         wins = 0
+        lostlogs = []
         thisblock = self.parse_block(self.get_block(thisblockhex))
         r = self.endpoint(f'{self.api_url}/leaders/logs')
         y = json.loads(r.content)
@@ -90,12 +91,23 @@ class JAnalyze():
             if(int(thisblock['epoch']) == int(epoch) and int(thisblock['slot']) == int(slot)):
                 if(thisblockhex == result['status']['Block']['block']):
                     wins += 1
-                # else:
-                #    print("lost to " + thisblock['pool'])
-        if opportunities == 0:
-            print("100")
-        else:
-            print(int(wins*100/opportunities))
+                else:
+                    lostlogs.append({
+                        "epoch": epoch,
+                        "slot": slot,
+                        "lost_to": thisblock['pool']
+                        })
+
+        if(opportunities - wins):
+            header = lostlogs[0].keys()
+            rows = [x.values() for x in lostlogs]
+            table = tabulate(rows, header, tablefmt="psql")
+            print(table)
+
+        print(f'{"Blocks Created:":<21}{opportunities:,d}')
+        print(f'{"Lost Blocks:":<21}{opportunities-wins:,d}')
+        if(opportunities):
+            print(f'{"Percent Lost:":<21}{(opportunities-wins)*100/opportunities:,.0f}%')
 
     def aggregate(self, silent=False, aggregate=1):
 
