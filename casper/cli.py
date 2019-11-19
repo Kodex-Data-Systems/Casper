@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import subprocess, os, pprint, time, requests
-from .utils import get_exec_sh, parse_yaml, Yaml
+from .utils import get_exec_sh, parse_yaml, Yaml, runcli
 yaml = Yaml()
 class Cli(object):
     def __init__(self, settings, db):
@@ -12,49 +12,25 @@ class Cli(object):
         self.loaded = True
         self.genesis = settings["genesis"]
         self.executable = get_exec_sh()
-
+        self._run = runcli
+        
         if "NO_JORMUNGANDR" in settings:
             self.no_jormungandr = settings["NO_JORMUNGANDR"]
         else:
             self.no_jormungandr = False
 
-    def _run(self, runstring, errorstring=None, raw=False, _parse=False):
-
-        try:
-            output = subprocess.check_output(
-                str(runstring),
-                shell=True,
-                executable=self.executable
-            ).decode()
-
-            if output.find("failed to make a REST request") < -1:
-                return
-            if raw is True:
-                return output
-
-            if _parse is True:
-                return parse_yaml(output)
-
-            return output.replace("\n", "")
-
-        except subprocess.CalledProcessError:
-            if errorstring is None:
-                print(f'Error running command: {runstring}\n')
-            else:
-                print(str(errorstring))
-
     def prefix(self, prefix, priv_key):
-        return self._run(
+        return runcli(
             f'jcli address account --prefix "{prefix}" --testing {priv_key}',
             "error cli.prefix"
         ).replace("\n", "")
 
     def show_jcli_version(self):
-        return self._run("jcli --full-version").replace("\n", "")
+        return runcli("jcli --full-version").replace("\n", "")
 
     def show_jormungandr_version(self):
         try:
-            return self._run(
+            return runcli(
                 'jormungandr --full-version',
                 "error cli.show_jormungandr_version"
             ).replace("\n", "")
@@ -63,7 +39,7 @@ class Cli(object):
 
     def show_blockchain_size(self):
         try:
-            return self._run(
+            return runcli(
                 f'ls -lrth {self.storage}',
                 "error cli.show_blockchain_size"
             )
@@ -72,20 +48,20 @@ class Cli(object):
 
     def show_stake(self):
         #  moved into node module
-        return self._run(
+        return runcli(
             f'jcli rest v0 stake get -h {self.node}/api',
             "error cli.show_stake"
         )
 
     def show_stake_pools(self):
-        return self._run(
+        return runcli(
             f'jcli rest v0 stake-pools get -h {self.node}/api',
             "error cli.show_stake_pools"
         )
 
     def show_balance(self, acct_addr, raw=True):
         try:
-            raw_output = self._run(
+            raw_output = runcli(
                 f'jcli rest v0 account get {acct_addr} -h {self.node}/api',
                 'Unable to view balance, account has not yet received a tx or node is offline.',
                 raw=True
@@ -108,14 +84,14 @@ class Cli(object):
             return 0
 
     def message_logs(self):
-        return self._run(
+        return runcli(
             f'jcli rest v0 message logs -h {self.node}/api',
             "error message logs",
             _parse=True
         )
 
     def genesis_decode(self):
-        decoded_genesis = self._run(
+        decoded_genesis = runcli(
             f"curl -s {self.node}/api/v0/block/{self.genesis} | jcli genesis decode",
             raw=True
         )
@@ -126,7 +102,7 @@ class Cli(object):
         ''' Create Secret Key, Public Key and Account Address '''
 
         #  Generate secret using JCLI.
-        _new_secret = self._run(
+        _new_secret = runcli(
             'jcli key generate --type ed25519extended',
             "error generating secret"
         ).replace("\n", "")
@@ -142,7 +118,7 @@ class Cli(object):
         os.remove('p.tmp')
 
         #  Generate account using JCLI.
-        _new_acct = self._run(
+        _new_acct = runcli(
             f'jcli address account {_new_public} --testing',
             "error generating account"
         ).replace("\n", "")
@@ -329,7 +305,7 @@ class Cli(object):
 #################### SEND TX #########################
     def _get_coefficient_constant(self):
         #  Extract the tx fee (coefficient and constant) from the node using string slicing.
-        data = self._run(
+        data = runcli(
             f'jcli rest v0 settings get -h {self.node}/api',
             _parse=True
         )
@@ -339,7 +315,7 @@ class Cli(object):
     def _get_counter(self, sender):
         try:
             #  Extract the required counter
-            data = self._run(
+            data = runcli(
                 f'jcli rest v0 account get {sender} -h {self.node}/api',
                 _parse=True
             )

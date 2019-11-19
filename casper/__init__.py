@@ -6,7 +6,7 @@ from requests import get
 from .node import Node
 from .database import Database
 from .cli import Cli
-from .utils import get_exec_sh, Yaml
+from .utils import get_exec_sh, Yaml, runcli
 yaml = Yaml()
 
 # os.environ["PYTHONIOENCODING"] = "utf-8"
@@ -56,9 +56,9 @@ class CasperCore(object):
     def versions(self):
         print("STARTING CASPER CORE v" + self.version)
         print("OS", platform.platform())
-        jcli_version = self._run("jcli --full-version")
-        jormungandr_version = self._run("jormungandr --full-version")
-        python_version = self._run("python3 --version")
+        jcli_version = runcli("jcli --full-version")
+        jormungandr_version = runcli("jormungandr --full-version")
+        python_version = runcli("python3 --version")
 
         if jormungandr_version is None:
             self.settings["NO_JORMUNGANDR"] = True
@@ -127,18 +127,3 @@ class CasperCore(object):
                 sys.exit(2)
             else:
                 print("CONTINUE WITH OLDER VERSION")
-
-    def _run(self, runstring, errorstring=None):
-        try:
-            version = subprocess.check_output(
-                str(runstring),
-                shell=True,
-                executable=self.executable
-            ).decode()
-            return version.replace("\n", "")
-
-        except subprocess.CalledProcessError:
-            if errorstring is None:
-                print(f'Error running command: {runstring}\n')
-            else:
-                print(str(errorstring))
