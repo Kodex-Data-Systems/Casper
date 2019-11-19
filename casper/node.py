@@ -17,12 +17,13 @@ class Node(object):
             # Here we can determine response_code.
             print(f"ERROR NODE IS NOT RESPONDING")
             sys.exit(2)
+
     def show_peers(self):
         try:
-            peers = subprocess.check_output('netstat -anlp | egrep "ESTABLISHED+.*jormungandr" | cut -c 45-68 | cut -d ":" -f 1 | sort | uniq -c | sort -nr',
+            peers = subprocess.check_output('netstat -anl | egrep "ESTABLISHED+.*jormungandr" | cut -c 45-68 | cut -d ":" -f 1 | sort | uniq -c | sort -nr',
             shell=True,
             executable=self.executable
-            ).decode()
+            ).decode().replace("\n", "")
             return peers
 
 
