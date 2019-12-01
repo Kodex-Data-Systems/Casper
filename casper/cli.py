@@ -85,9 +85,9 @@ class Cli(object):
 
     def message_logs(self):
         return runcli(
-            f'jcli rest v0 message logs -h {self.node}/api',
-            "error message logs",
-            _parse=True
+        f'jcli rest v0 message logs -h {self.node}/api',
+        "error message logs",
+        _parse=True
         )
 
     def genesis_decode(self):
@@ -351,7 +351,7 @@ class Cli(object):
             )
             #  7 Show Transaction Info
             info = subprocess.check_output(
-                f'jcli transaction info --fee-constant {str(constant)} --fee-coefficient {str(coefficient)} --fee-certificate {str(cert)} --staging file.staging',
+                f'jcli transaction info --fee-constant {str(constant)} --fee-coefficient {str(coefficient)} --fee-certificate {str(certificate_stake_delegation)} --staging file.staging',
                 shell=True,
                 executable=self.executable
             ).decode()
@@ -369,7 +369,7 @@ class Cli(object):
             #  Remove temp files, return tx not sent.
             self._remove_tmp()
 
-            return fragment_id, total_fees, cert, coefficient, constant
+            return fragment_id, total_fees, certificate_stake_delegation, coefficient, constant
 
         except IndexError:
             print('Unable to connect to node')
@@ -399,7 +399,7 @@ class Cli(object):
             _force_send = True
 
         try:
-            coefficient, constant = self._get_coefficient_constant()
+            coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
 
             #  Required transaction fees. Note: Coefficient should be applied once for each input and output.
             total_fees = str(int(amount) + (coefficient * 2) + constant)
