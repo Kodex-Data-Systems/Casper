@@ -237,11 +237,14 @@ class CliInterface:
                         "received_from": log["received_from"],
                         "status": self.determine_status(log)
                     })
-
-                header = message_logs[0].keys()
-                rows =  [x.values() for x in message_logs]
-                table = tabulate(rows, header, tablefmt="psql")
-                print(table)
+                if message_logs is not None and len(message_logs) > 0:
+                    header = message_logs[0].keys()
+                    rows =  [x.values() for x in message_logs]
+                    table = tabulate(rows, header, tablefmt="psql")
+                    print(table)
+                
+                else:
+                    print("Message Logs are Empty")
 
             if choice == '11': # Node stats.
                 self.clear()
