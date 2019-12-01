@@ -8,22 +8,6 @@ Casper is a simple, but powerful, blockchain interface tool designed to be used 
 * Private Transaction Queries
 * No Data Surveillance
 
-If you find this software useful, consider buying us a beer using [Yoroi](web+cardano:Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK?amount=100.000000) to show your support!
-
-<web+cardano:Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK?amount=100.000000>
-
-
-* Our ADA donation address is: Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK
-
-* Our BTC donation address is: bc1qdfspmlkcp094zws0gwqy2d086sldxlehdrln9m
-
-* Our ETC donation address is: 0x9Cc9201c47f4ff4b78d8b4Fd1891E3dA02E155B6
-
-
-
-
-
-
 # Getting Started
 
 ## Yarn Setup
@@ -85,3 +69,17 @@ jmpath: /tmp/jormungandr
 * or run `python3 config` or `yarn setup` to create a config file
 
 # [Casper Module Documentation](casper.md)
+
+
+If you find this software useful, consider buying us a beer using [Yoroi](web+cardano:Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK?amount=100.000000) to show your support!
+
+<web+cardano:Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK?amount=100.000000>
+
+
+* Our ADA donation address is: Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK
+
+* Our BTC donation address is: bc1qdfspmlkcp094zws0gwqy2d086sldxlehdrln9m
+
+* Our ETC donation address is: 0x9Cc9201c47f4ff4b78d8b4Fd1891E3dA02E155B6
+
+

@@ -174,7 +174,7 @@ class Cli(object):
         os.remove('p.tmp')
 
         #  3 Create New Stake Pool Registration Certificate
-        os.system(f'jcli certificate new stake-pool-registration --kes-key {_pool_kes_pk} --vrf-key {_pool_vrf_pk} --owner {pk} --serial 1010101010 --start-validity 0 --management-threshold 1 >stake_pool.cert')
+        os.system(f'jcli certificate new stake-pool-registration --kes-key {_pool_kes_pk} --vrf-key {_pool_vrf_pk} --owner {pk} --start-validity 0 --management-threshold 1 >stake_pool.cert')
 
         with open('stake_pool.cert', 'r') as f:
             stake_pool_cert = f.read()[:-1]
