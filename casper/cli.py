@@ -136,15 +136,18 @@ class Cli(object):
         except:
             return False
 
+################## Fees ##################################
+
+    def _get_fees(self):
+        #  Extract the tx fee (coefficient and constant) from the node using string slicing.
+        data = runcli(
+            f'jcli rest v0 settings get -h {self.node}/api',
+            _parse=True
+        )
+
+        return int(data["fees"]["coefficient"]), int(data["fees"]["constant"]), int(data['fees']['per_certificate_fees']['certificate_pool_registration']), int(data['fees']['per_certificate_fees']['certificate_stake_delegation'])
 
 ################## Certs ##################################
-    def _get_cert(self):
-        try:
-            get_fee = requests.get(f"{self.node}/api/v0/settings").json()
-            cert = get_fee['fees']['per_certificate_fees']['certificate_pool_registration']
-            return cert
-        except:
-            return False
 
     def create_pool(self, pk, sk, account, pool_name):
         #  1 Create VRF Secret
@@ -185,7 +188,7 @@ class Cli(object):
         os.system(f'echo {sk} > stake_key.sk')
         os.system(f'cat stake_pool.cert | jcli certificate get-stake-pool-id | tee stake_pool.id')
 
-        fragment_id = self._send_certificate(account, sk)
+        fragment_id = self._send_pool_certificate(account, sk)
         print('\nFragment ID: ', fragment_id[0])
 
         with open('stake_pool.id', 'r') as f:
@@ -224,26 +227,98 @@ class Cli(object):
         with open('stake_pool.cert', 'w') as f:
             f.write(cert_id)
 
-        txdetails = self._send_certificate(account, sk)
+        txdetails = self._send_delegation_certificate(account, sk)
         fragmentid = txdetails[0]
         return fragmentid, cert_id, signed_id
 
-    def _send_certificate(self, sender, sk, counter=None):
+    def _send_pool_certificate(self, sender, sk, counter=None):
         if counter is None:
             counter = self._get_counter(sender)
 
         try:
-            coefficient, constant = self._get_coefficient_constant()
-            cert = self._get_cert()
-
+            coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
+            
             with open('file.staging', 'w'):
                 pass
             with open('stake_pool.cert', 'r') as r:
                 certificate = r.read()
 
             #  Required transaction fees.
-            total_fees = str(cert + coefficient + constant)
-            print(f"\nCertificate Fee: {str(cert)} \nCoefficient: {str(coefficient)} \nFee Constant: {str(constant)} \nTotal: {str(total_fees)}")
+            total_fees = str(certificate_pool_registration + coefficient + constant)
+            print(f"\nCertificate Fee: {str(certificate_pool_registration)} \nCoefficient: {str(coefficient)} \nFee Constant: {str(constant)} \nTotal: {str(total_fees)}")
+
+            #  1 Create the Offline Staging File.
+            os.system('jcli transaction new --staging file.staging')
+            #  2 Add the Account to the Transaction
+            os.system(f'jcli transaction add-account {sender} {total_fees} --staging file.staging')
+            #  3 Add the Certificate to the Transaction
+            os.system(f'jcli transaction add-certificate {certificate} --staging file.staging')
+            #  4 Finalize the Transaction
+            os.system('jcli transaction finalize --staging file.staging')
+            witness = subprocess.check_output(
+                'jcli transaction data-for-witness --staging file.staging',
+                shell=True,
+                executable=self.executable
+            ).decode()[:-1]
+
+            #  Create files for witness via python. JCLI requires environmental variables.
+            with open('witness.output.tmp', 'w+') as f:
+                pass
+            with open('witness.secret.tmp', 'w+') as f:
+                f.write(sk)
+
+            #  5  Make the Witness.
+            os.system(
+                f'jcli transaction make-witness {witness} --genesis-block-hash {self.genesis} --type "account" --account-spending-counter {str(counter)} witness.output.tmp witness.secret.tmp'
+            )
+
+            #  6 Add the Witness to the Transaction.
+            os.system(
+                'jcli transaction add-witness witness.output.tmp --staging file.staging'
+            )
+            #  7 Show Transaction Info
+            info = subprocess.check_output(
+                f'jcli transaction info --fee-constant {str(constant)} --fee-coefficient {str(coefficient)} --fee-certificate {str(certificate_pool_registration)} --staging file.staging',
+                shell=True,
+                executable=self.executable
+            ).decode()
+
+            #  8 Finalize the Transaction and Send to Blockchain
+            os.system(f'echo {sk} > stake_key.sk')
+            os.system('jcli transaction seal --staging file.staging')
+            os.system(f'jcli transaction auth -k stake_key.sk --staging file.staging')
+            fragment_id = subprocess.check_output(
+                f'jcli transaction to-message --staging file.staging | jcli rest v0 message post -h {self.node}/api',
+                shell=True,
+                executable=self.executable
+            ).decode()
+
+            #  Remove temp files, return tx not sent.
+            self._remove_tmp()
+
+            return fragment_id, total_fees, certificate_pool_registration, coefficient, constant
+
+        except IndexError:
+            print('Unable to connect to node')
+            print('Verify account is active and check node')
+            self._remove_tmp()
+            return False
+
+    def _send_delegation_certificate(self, sender, sk, counter=None):
+        if counter is None:
+            counter = self._get_counter(sender)
+
+        try:
+            coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
+            
+            with open('file.staging', 'w'):
+                pass
+            with open('stake_pool.cert', 'r') as r:
+                certificate = r.read()
+
+            #  Required transaction fees.
+            total_fees = str(certificate_stake_delegation + coefficient + constant)
+            print(f"\nCertificate Fee: {str(certificate_stake_delegation)} \nCoefficient: {str(coefficient)} \nFee Constant: {str(constant)} \nTotal: {str(total_fees)}")
 
             #  1 Create the Offline Staging File.
             os.system('jcli transaction new --staging file.staging')
@@ -301,16 +376,7 @@ class Cli(object):
             print('Verify account is active and check node')
             self._remove_tmp()
             return False
-
 #################### SEND TX #########################
-    def _get_coefficient_constant(self):
-        #  Extract the tx fee (coefficient and constant) from the node using string slicing.
-        data = runcli(
-            f'jcli rest v0 settings get -h {self.node}/api',
-            _parse=True
-        )
-
-        return int(data["fees"]["coefficient"]), int(data["fees"]["constant"])
 
     def _get_counter(self, sender):
         try:
@@ -335,7 +401,7 @@ class Cli(object):
         try:
             coefficient, constant = self._get_coefficient_constant()
 
-            #  Required transaction fees.
+            #  Required transaction fees. Note: Coefficient should be applied once for each input and output.
             total_fees = str(int(amount) + (coefficient * 2) + constant)
             #  print(coefficient, constant, total_fees)
             #  Begin tx procedure through JCLI.
