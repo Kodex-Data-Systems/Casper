@@ -141,7 +141,7 @@ class Cli(object):
     def _get_cert(self):
         try:
             get_fee = requests.get(f"{self.node}/api/v0/settings").json()
-            cert = get_fee['fees']['certificate']
+            cert = get_fee['fees']['per_certificate_fees']['certificate_pool_registration']
             return cert
         except:
             return False
