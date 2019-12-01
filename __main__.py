@@ -19,7 +19,7 @@ Please choose an option:
 (10) Show Message Log            (11) Show Node stats         (12) Show Established Peers
 (13) Show Stake Pools            (14) Show Stake              (15) Show Blockchain Size
 (16) Show Leader Logs            (17) Show Settings           (18) Aggregate Blocks Produced
-(19) Stake Distribution          (20) Genesis Decode          (21) Fork Check
+(19) Stake Distribution          (20) Genesis Decode          (21) Lost Blocks
 
 (e) Export All Accounts          (i) Import accounts.yaml     (f) View Config File
 (v) Show Versions                (c) Clear Screen             (q) Quit
@@ -237,11 +237,14 @@ class CliInterface:
                         "received_from": log["received_from"],
                         "status": self.determine_status(log)
                     })
-
-                header = message_logs[0].keys()
-                rows =  [x.values() for x in message_logs]
-                table = tabulate(rows, header, tablefmt="psql")
-                print(table)
+                if message_logs is not None and len(message_logs) > 0:
+                    header = message_logs[0].keys()
+                    rows =  [x.values() for x in message_logs]
+                    table = tabulate(rows, header, tablefmt="psql")
+                    print(table)
+                
+                else:
+                    print("Message Logs are Empty")
 
             if choice == '11': # Node stats.
                 self.clear()
@@ -316,12 +319,12 @@ class CliInterface:
                 self.clear()
                 print(cspr.cli.genesis_decode())
 
-            if choice == '21': #  Fork Check
+            if choice == '21': #  Lost Blocks
                 self.clear()
                 try:
-                    analyze.forkcheck()
+                    analyze.lostblocks()
                 except:
-                    print("ERROR FORK CHECK\n")
+                    print("ERROR LOST BLOCKS\n")
 
             if choice == 'f': #  Show Config.
                 self.clear()

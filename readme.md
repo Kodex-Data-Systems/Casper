@@ -1,3 +1,7 @@
+# Casper
+
+Casper is an open source library designed to improve access to the Jormungandr node client through JCLI, developed by Kodex Data Systems.
+
 # Settings
 
 # Usage
@@ -35,3 +39,15 @@ jmpath: /tmp/jormungandr
 
 **Optional Crypt Package:**
 * pip3 install pycrypto
+
+
+If you find this software useful, consider buying us a beer using [Yoroi](web+cardano:Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK?amount=100.000000) to show your support!
+
+<web+cardano:Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK?amount=100.000000>
+
+
+* Our ADA donation address is: Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK
+
+* Our BTC donation address is: bc1qdfspmlkcp094zws0gwqy2d086sldxlehdrln9m
+
+* Our ETC donation address is: 0x9Cc9201c47f4ff4b78d8b4Fd1891E3dA02E155B6
