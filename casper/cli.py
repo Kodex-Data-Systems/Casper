@@ -145,7 +145,7 @@ class Cli(object):
             _parse=True
         )
 
-        return int(data["fees"]["coefficient"]), int(data["fees"]["constant"]), int(data['fees']['per_certificate_fees']['certificate_pool_registration']), int(data['fees']['per_certificate_fees']['certificate_stake_delegation'])
+        return int(data["fees"]["certificate"]), int(data["fees"]["coefficient"]), int(data["fees"]["constant"]), int(data['fees']['per_certificate_fees']['certificate_owner_stake_delegation']), int(data['fees']['per_certificate_fees']['certificate_pool_registration']), int(data['fees']['per_certificate_fees']['certificate_stake_delegation'])
 
 ################## Certs ##################################
 
@@ -177,7 +177,7 @@ class Cli(object):
         os.remove('p.tmp')
 
         #  3 Create New Stake Pool Registration Certificate
-        os.system(f'jcli certificate new stake-pool-registration --kes-key {_pool_kes_pk} --vrf-key {_pool_vrf_pk} --owner {pk} --start-validity 0 --tax-ratio "1/10" --tax-limit 10000000 --management-threshold 1 >stake_pool.cert')
+        os.system(f'jcli certificate new stake-pool-registration --kes-key {_pool_kes_pk} --vrf-key {_pool_vrf_pk} --owner {pk} --start-validity 0 --tax-ratio "1/1"  --management-threshold 1 > stake_pool.cert')
 
         with open('stake_pool.cert', 'r') as f:
             stake_pool_cert = f.read()[:-1]
@@ -236,12 +236,12 @@ class Cli(object):
             counter = self._get_counter(sender)
 
         try:
-            coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
+            certificate, coefficient, constant, certificate_owner_stake_delegation, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
             
             with open('file.staging', 'w'):
                 pass
             with open('stake_pool.cert', 'r') as r:
-                certificate = r.read()
+                signed_certificate = r.read()
 
             #  Required transaction fees.
             total_fees = str(certificate_pool_registration + coefficient + constant)
@@ -252,7 +252,7 @@ class Cli(object):
             #  2 Add the Account to the Transaction
             os.system(f'jcli transaction add-account {sender} {total_fees} --staging file.staging')
             #  3 Add the Certificate to the Transaction
-            os.system(f'jcli transaction add-certificate {certificate} --staging file.staging')
+            os.system(f'jcli transaction add-certificate {signed_certificate} --staging file.staging')
             #  4 Finalize the Transaction
             os.system('jcli transaction finalize --staging file.staging')
             witness = subprocess.check_output(
@@ -309,12 +309,12 @@ class Cli(object):
             counter = self._get_counter(sender)
 
         try:
-            coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
+            certificate, coefficient, constant, certificate_owner_stake_delegation, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
             
             with open('file.staging', 'w'):
                 pass
             with open('stake_pool.cert', 'r') as r:
-                certificate = r.read()
+                signed_certificate = r.read()
 
             #  Required transaction fees.
             total_fees = str(certificate_stake_delegation + coefficient + constant)
@@ -325,7 +325,7 @@ class Cli(object):
             #  2 Add the Account to the Transaction
             os.system(f'jcli transaction add-account {sender} {total_fees} --staging file.staging')
             #  3 Add the Certificate to the Transaction
-            os.system(f'jcli transaction add-certificate {certificate} --staging file.staging')
+            os.system(f'jcli transaction add-certificate {signed_certificate} --staging file.staging')
             #  4 Finalize the Transaction
             os.system('jcli transaction finalize --staging file.staging')
             witness = subprocess.check_output(
@@ -399,8 +399,8 @@ class Cli(object):
             _force_send = True
 
         try:
-            coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
-
+            certificate, coefficient, constant, certificate_owner_stake_delegation, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
+            
             #  Required transaction fees. Note: Coefficient should be applied once for each input and output.
             total_fees = str(int(amount) + (coefficient * 2) + constant)
             #  print(coefficient, constant, total_fees)

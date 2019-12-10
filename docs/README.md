@@ -71,12 +71,12 @@ jmpath: /tmp/jormungandr
 # [Casper Module Documentation](casper.md)
 
 
-If you find this software useful, consider buying us a beer using [Yoroi](web+cardano:Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK?amount=100.000000) to show your support!
+If you find this software useful, consider buying us a beer using [Yoroi](web+cardano:Ae2tdPwUPEZLATRsVgFzdCVjVJx1hRLiMeWVka3ni7gnykDde9ZvuVAeeWd?amount=100.000000) to show your support!
 
-<web+cardano:Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK?amount=100.000000>
+<web+cardano:Ae2tdPwUPEZLATRsVgFzdCVjVJx1hRLiMeWVka3ni7gnykDde9ZvuVAeeWd?amount=100.000000>
 
 
-* Our ADA donation address is: Ae2tdPwUPEZFowK1DYUa1WxpQFCr1zZyLwcfrSeiuPKb4NSXDpJALxBzTeK
+* Our ADA donation address is: Ae2tdPwUPEZLATRsVgFzdCVjVJx1hRLiMeWVka3ni7gnykDde9ZvuVAeeWd
 
 * Our BTC donation address is: bc1qdfspmlkcp094zws0gwqy2d086sldxlehdrln9m
 
