@@ -145,7 +145,7 @@ class Cli(object):
             _parse=True
         )
 
-        return int(data["fees"]["certificate"]), int(data["fees"]["coefficient"]), int(data["fees"]["constant"]), int(data['fees']['per_certificate_fees']['certificate_owner_stake_delegation']), int(data['fees']['per_certificate_fees']['certificate_pool_registration']), int(data['fees']['per_certificate_fees']['certificate_stake_delegation'])
+        return int(data["fees"]["certificate"]), int(data["fees"]["coefficient"]), int(data["fees"]["constant"]), int(data['fees']['per_certificate_fees']['certificate_pool_registration']), int(data['fees']['per_certificate_fees']['certificate_stake_delegation'])
 
 ################## Certs ##################################
 
@@ -236,7 +236,7 @@ class Cli(object):
             counter = self._get_counter(sender)
 
         try:
-            certificate, coefficient, constant, certificate_owner_stake_delegation, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
+            certificate, coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
             
             with open('file.staging', 'w'):
                 pass
@@ -309,7 +309,7 @@ class Cli(object):
             counter = self._get_counter(sender)
 
         try:
-            certificate, coefficient, constant, certificate_owner_stake_delegation, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
+            certificate, coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
             
             with open('file.staging', 'w'):
                 pass
@@ -399,7 +399,7 @@ class Cli(object):
             _force_send = True
 
         try:
-            certificate, coefficient, constant, certificate_owner_stake_delegation, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
+            certificate, coefficient, constant, certificate_pool_registration, certificate_stake_delegation = self._get_fees()
             
             #  Required transaction fees. Note: Coefficient should be applied once for each input and output.
             total_fees = str(int(amount) + (coefficient * 2) + constant)
